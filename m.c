@@ -3,12 +3,11 @@
 #include <stdbool.h>
 #include <getopt.h>
 
+#include "log.h"
 #include "util.h"
+#include "db.h"
 #include "xdg.h"
-
-static int option_flag;
-
-
+#include "config.h"
 
 static struct option long_options[] =
 {
@@ -25,7 +24,7 @@ static struct option long_options[] =
 
 void version(FILE *out)
 {
-	puts("``m'' Version 0.1");
+	safe_fputs("``m'' Version 0.1\n", out);
 }
 
 void usage(FILE *out, char *arg0)
@@ -36,11 +35,14 @@ void usage(FILE *out, char *arg0)
 		"\n"
 		"Options:\n"
 		"  -v,--verbose     Increase verbosity\n"
+		"  -s,--silent      Decrease verbosity\n"
 		"  -h,--help        Print this help\n"
 		"  --version        Print the version\n"
 		"\n"
 		"  -c,--config FILE Use the specified config\n"
 		"  -d,--db     FILE Use the specified database\n"
+		"  -f,--force       Force reread the entire database\n"
+		"  -l,--log    FILE Log to FILE instead of stdout\n"
 		, arg0);
 }
 
@@ -50,22 +52,24 @@ int main(int argc, char **argv)
 	int option_index = 0;
 	int c;
 
+	init_logging();
+
+	//Set defaults
+	set_config(get_config_path());
+	char *d = get_data_dir();
+	set_database(get_file(d, "db"));
+	free(d);
+
 	while((c = getopt_long(argc, argv,
-			"vhd:c:", long_options, &option_index)) != -1){
+			"vshl:d:c:", long_options, &option_index)) != -1){
 		switch (c) {
-		case 0:
-			printf("option %s", long_options[option_index].name);
-			printf("flag %d", long_options[option_index].flag);
-			if (optarg) {
-				printf (" with arg %s", optarg);
-			}
-			printf("\n");
-			break;
 		case 'c':
-			printf("Config location: %s\n", optarg);
+			logmsg(debug, "Set config location: %s\n", optarg);
+			set_config(safe_strdup(optarg));
 			break;
 		case 'd':
-			printf("DB location: %s\n", optarg);
+			logmsg(debug, "DB location: %s\n", optarg);
+			set_database(safe_strdup(optarg));
 			break;
 		case 'e':
 			version(stdout);
@@ -73,9 +77,18 @@ int main(int argc, char **argv)
 		case 'h':
 			usage(stdout, argv[0]);
 			return EXIT_SUCCESS;
+		case 'l':
+			set_logfile(optarg);
+			logmsg(debug, "Log output set to: %s\n", optarg);
+			break;
+		case 's':
+			decrease_loglevel();
+			logmsg(debug, "Decreased loglevel\n");
+			break;
 		case 'v':
-			usage(stdout, argv[0]);
-			return EXIT_SUCCESS;
+			increase_loglevel();
+			logmsg(debug, "Increased loglevel\n");
+			break;
 		default:
 			usage(stderr, argv[0]);
 			return EXIT_FAILURE;
@@ -87,6 +100,10 @@ int main(int argc, char **argv)
 		usage(stderr, argv[0]);
 		return EXIT_FAILURE;
 	}
+
+	struct db *db = get_db(get_database());
+	print_db(db, stdout);
+	save_db(db, safe_strdup(get_database()));
 
 	return EXIT_SUCCESS;
 }

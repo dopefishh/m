@@ -7,6 +7,7 @@
 #include <glob.h>
 #include <sys/stat.h>
 
+#include "log.h"
 #include "util.h"
 
 void perrordie(char *prg)
@@ -64,7 +65,7 @@ char *safe_strdup(const char *s)
 {
 	char *r = strdup(s);
 	if (r == NULL)
-		perror("strdup");
+		perrordie("strdup");
 	return r;
 }
 
@@ -74,6 +75,64 @@ char *safe_getenv(char *env, char *def)
 	if ((t = getenv(env)) != NULL)
 		def = t;
 	return safe_strdup(def);
+}
+
+FILE *safe_fopen(char *path, char *mode)
+{
+	FILE *r = fopen(path, mode);
+	if(r == NULL)
+		perrordie("fopen");
+	return r;
+}
+
+void safe_fclose(FILE *f)
+{
+	if(fclose(f) != 0)
+		perrordie("fclose");
+}
+
+void safe_fputs(char *m, FILE *f)
+{
+	if(fputs(m, f) < 0)
+		perrordie("fputs");
+}
+
+void safe_fprintf(FILE *f, char *m, ...)
+{
+	va_list ap;
+	va_start(ap, m);
+	safe_vfprintf(f, m, ap);
+	va_end(ap);
+}
+
+void safe_vfprintf(FILE *f, char *m, va_list ap)
+{
+	if(vfprintf(f, m, ap) < 0)
+		perrordie("vfprintf");
+}
+
+size_t safe_fread(void *ptr, size_t size, size_t nmemb, FILE *f)
+{
+	size_t r = fread(ptr, size, nmemb, f);
+	if(r == 0 && ferror(f))
+		perrordie("fread");
+	return r;
+}
+
+size_t safe_fwrite(void *ptr, size_t size, size_t nmemb, FILE *f)
+{
+	size_t r = fwrite(ptr, size, nmemb, f);
+	if(r == 0 && ferror(f))
+		perrordie("fread");
+	return r;
+}
+
+time_t safe_time(time_t *tloc)
+{
+	time_t t = time(tloc);
+	if(t == (time_t)-1)
+		perrordie("time");
+	return t;
 }
 
 char *get_file(char *home, char *file)
@@ -124,4 +183,22 @@ char *resolve_tilde(const char *path)
 	globfree(&globbuf);
 
 	return result;
+}
+
+void mkdir_p(char *path)
+{
+	if(path_exists(path))
+		return;
+	char oldc;
+	char *tail = strchr(path, '/');
+	while(tail != NULL){
+		oldc = tail[1];
+		tail[1] = '\0';
+		if(!path_exists(path)){
+			logmsg(debug, "Creating directory: %s\n", path);
+			mkdir(path, 0755);
+		}
+		tail[1] = oldc;
+		tail = strchr(tail+1, '/');
+	}
 }
