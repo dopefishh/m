@@ -12,7 +12,9 @@ void parse_cli(int argc, char **argv);
 
 ENTRYH(char *, database);
 ENTRYH(char *, config);
+ENTRYH(char *, libraryroot);
 ENTRYH(bool, force_reread);
 ENTRYH(bool, dont_update);
+ENTRYH(bool, fix_filesystem);
 
 #endif

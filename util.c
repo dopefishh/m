@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <glob.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 #include "log.h"
 #include "util.h"
@@ -122,6 +123,14 @@ void safe_fgets(char *m, int size, FILE *f)
 		perrordie("fgets");
 }
 
+char safe_getc(FILE *f)
+{
+	char c = getc(f);
+	if(c == EOF && !feof(f))
+		perrordie("getc");
+	return c;
+}
+
 void safe_fprintf(FILE *f, char *m, ...)
 {
 	va_list ap;
@@ -149,6 +158,30 @@ size_t safe_fwrite(void *ptr, size_t size, size_t nmemb, FILE *f)
 	size_t r = fwrite(ptr, size, nmemb, f);
 	if(r == 0 && ferror(f))
 		perrordie("fread");
+	return r;
+}
+
+DIR *safe_opendir(char *d)
+{
+	DIR *r = opendir(d);
+	if(r == NULL)
+		perrordie("opendir");
+	return r;
+}
+
+void safe_closedir(DIR *d)
+{
+	if(closedir(d) == -1)
+		perrordie("closedir");
+
+}
+
+struct dirent *safe_readdir(DIR *d)
+{
+	errno = 0;
+	struct dirent *r = readdir(d);
+	if(r == NULL && errno != 0)
+		perrordie("readdir");
 	return r;
 }
 

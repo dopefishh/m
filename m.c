@@ -19,6 +19,9 @@ int main(int argc, char **argv)
 	char *d = get_data_dir();
 	set_database(get_file(d, "db"));
 	free(d);
+	d = resolve_tilde("~/Music");
+	set_libraryroot(safe_getenv("XDG_MUSIC_DIR", d));
+	free(d);
 
 	//Gather settings
 	parse_cli(argc, argv);
@@ -26,6 +29,9 @@ int main(int argc, char **argv)
 
 	//Load database
 	struct db *db = get_db(get_database());
+
+	//Update db
+	update_db(db);
 
 	//Save database
 	save_db(db, get_database());

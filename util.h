@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <time.h>
+#include <dirent.h>
 
 #include "util.h"
 
@@ -30,10 +31,16 @@ FILE *safe_fopen(char *path, char *mode);
 void safe_fclose(FILE *f);
 void safe_fputs(char *m, FILE *f);
 void safe_fgets(char *m, int size, FILE *f);
+char safe_getc(FILE *f);
 void safe_fprintf(FILE *f, char *m, ...);
 void safe_vfprintf(FILE *f, char *m, va_list ap);
 size_t safe_fread(void *ptr, size_t size, size_t nmemb, FILE *f);
 size_t safe_fwrite(void *ptr, size_t size, size_t nmemb, FILE *f);
+
+// Directory
+DIR *safe_opendir(char *d);
+void safe_closedir(DIR *d);
+struct dirent *safe_readdir(DIR *d);
 
 // Time
 time_t safe_time(time_t *tloc);
@@ -45,6 +52,7 @@ char *safe_getenv(char *env, char *def);
 char *get_file(char *home, char *file);
 char *get_file_if_exist(char *home, char *file);
 bool path_exists(const char *path);
+bool is_file(const char *path);
 char *resolve_tilde(const char *path);
 void mkdir_p(char *path);
 

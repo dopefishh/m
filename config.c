@@ -20,14 +20,16 @@
 
 static struct option lopts[] =
 {
-	{"verbose",    no_argument,       0, 'v'},
-	{"silent",     no_argument,       0, 's'},
-	{"help",       no_argument,       0, 'h'},
-	{"version",    no_argument,       0, 'e'},
-	{"config",     required_argument, 0, 'c'},
-	{"db",         required_argument, 0, 'd'},
-	{"force",      no_argument,       0, 'f'},
-	{"dontupdate", no_argument,       0, 'n'},
+	{"verbose",     no_argument,       0, 'v'},
+	{"silent",      no_argument,       0, 's'},
+	{"help",        no_argument,       0, 'h'},
+	{"version",     no_argument,       0, 'e'},
+	{"config",      required_argument, 0, 'c'},
+	{"libraryroot", no_argument,       0, 'r'},
+	{"db",          required_argument, 0, 'd'},
+	{"force",       no_argument,       0, 'f'},
+	{"dontupdate",  no_argument,       0, 'n'},
+	{"filesystem",  no_argument,       0, 'x'},
 	{0, 0, 0, 0}
 };
 
@@ -48,11 +50,13 @@ void usage(FILE *out, char *arg0)
 		"  -h,--help        Print this help\n"
 		"  --version        Print the version\n"
 		"\n"
-		"  -c,--config FILE Use the specified config\n"
-		"  -d,--db     FILE Use the specified database\n"
-		"  -f,--force       Force reread the entire database\n"
-		"  -n,--dontupdate  Don't update the database\n"
-		"  -l,--log    FILE Log to FILE instead of stdout\n"
+		"  -c,--config      FILE Use the specified config\n"
+		"  -d,--db          FILE Use the specified database\n"
+		"  -f,--force            Force reread the entire database\n"
+		"  -n,--dontupdate       Don't update the database\n"
+		"  -l,--log         FILE Log to FILE instead of stdout\n"
+		"  -r,--libraryroot FILE Log to FILE instead of stdout\n"
+		"  -x,--filesystem       Stay within one filesystem\n"
 		, arg0);
 }
 
@@ -60,15 +64,15 @@ void parse_cli(int argc, char **argv)
 {
 	int oi = 0;
 	int c;
-	while((c = getopt_long(argc, argv, "c:d:fhl:nsv", lopts, &oi)) != -1){
+	while((c = getopt_long(argc, argv, "c:d:fhl:nr:sv", lopts, &oi)) != -1){
 		switch (c) {
 		case 'c':
 			logmsg(debug, "Set config location: %s\n", optarg);
-			set_config(safe_strdup(optarg));
+			set_config(resolve_tilde(optarg));
 			break;
 		case 'd':
 			logmsg(debug, "DB location: %s\n", optarg);
-			set_database(safe_strdup(optarg));
+			set_database(resolve_tilde(optarg));
 			break;
 		case 'e':
 			version(stdout);
@@ -80,11 +84,15 @@ void parse_cli(int argc, char **argv)
 			usage(stdout, argv[0]);
 			exit(EXIT_SUCCESS);
 		case 'l':
-			set_logfile(optarg);
+			set_logfile(resolve_tilde(optarg));
 			logmsg(debug, "Log output set to: %s\n", optarg);
 			break;
 		case 'n':
 			set_dont_update(true);
+			break;
+		case 'r':
+			logmsg(debug, "Library root set to %s\n", optarg);
+			set_libraryroot(resolve_tilde(optarg));
 			break;
 		case 's':
 			decrease_loglevel();
@@ -145,5 +153,7 @@ void parse_config()
 
 ENTRY(char *, database, FREE, NULL);
 ENTRY(char *, config, FREE, NULL);
+ENTRY(char *, libraryroot, FREE, NULL);
 ENTRY(bool, force_reread, NOT_FREE, false);
 ENTRY(bool, dont_update, NOT_FREE, false);
+ENTRY(bool, fix_filesystem, NOT_FREE, false);

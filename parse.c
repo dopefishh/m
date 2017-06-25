@@ -6,15 +6,34 @@
 uint64_t parse_int64(FILE *f)
 {
 	uint64_t b;
-	if(fread((void *)&b, 8, 1, f) != 1)
+	if(safe_fread((void *)&b, 8, 1, f) != 1)
 		die("Expected 64bit Integer");
+	return b;
+}
+char *parse_string(FILE *f)
+{
+	size_t total = 16, read = 0;
+	char *b = (char *)safe_malloc(total);
+	while(b[read] != '\0'){
+		if(read >= total)
+			b = (char *)safe_realloc(b, total*=2);
+		b[read++] = safe_getc(f);
+		if(b[read] == EOF)
+			die("Expected string");
+	}
 	return b;
 }
 
 void write_int64(FILE *f, uint64_t i)
 {
-	if(fwrite((void *)&i, 8, 1, f) != 1)
+	if(safe_fwrite((void *)&i, 8, 1, f) != 1)
 		die("Unable to write 64bit Integer");
+}
+
+void write_string(FILE *f, char *s)
+{
+	if(safe_fwrite(s, strlen(s)+1, 1, f) != 1)
+		die("Unable to write string");
 }
 
 char *get_line(FILE *f)
