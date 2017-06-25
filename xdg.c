@@ -7,11 +7,12 @@ char *get_config_path(void)
 	char *cf, *c;
 
 	/* Check user xdg config file */
-	if ((cf = get_file_if_exist(
-		safe_getenv("XDG_CONFIG_HOME", "~/.config"),
-			"/m/config")) != NULL){
+	c = safe_getenv("XDG_CONFIG_HOME", "~/.config");
+	if ((cf = get_file_if_exist(c, "/m/config")) != NULL){
+		free(c);
 		return cf;
 	}
+	free(c);
 
 	/* Check system xdg config files */
 	char *systempaths = safe_getenv("XDG_CONFIG_DIRS", "/etc/xdg");

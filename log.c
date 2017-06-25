@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdarg.h>
+#include <time.h>
 
 #include "config.h"
 #include "util.h"
@@ -21,9 +22,15 @@ void set_logfile(char *f)
 
 void logmsg(enum loglevel lvl, char *msg, ...)
 {
-	if(loglevel <= lvl){
+	if(loglevel >= lvl){
 		va_list ap;
 		va_start(ap, msg);
+		if(lvl == debug)
+			safe_fputs("debug: ", logfile);
+		else if (lvl == info)
+			safe_fputs("info : ", logfile);
+		else
+			safe_fputs("warn : ", logfile);
 		safe_vfprintf(logfile, msg, ap);
 		va_end(ap);
 	}

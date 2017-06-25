@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <ctype.h>
 #include <glob.h>
 #include <sys/stat.h>
 
@@ -25,12 +26,20 @@ void die(char *msg, ...)
 	exit(EXIT_FAILURE);
 }
 
-void *safe_malloc(unsigned long int s)
+void *safe_malloc(size_t s)
 {
 	void *r = malloc(s);
 	if (r == NULL)
 		perrordie("malloc");
 	return r;
+}
+
+void *safe_realloc(void *ptr, size_t s)
+{
+	ptr = realloc(ptr, s);
+	if (ptr == NULL)
+		perrordie("malloc");
+	return ptr;
 }
 
 void safe_free(int count, ...)
@@ -69,6 +78,16 @@ char *safe_strdup(const char *s)
 	return r;
 }
 
+char *trim(char *s)
+{
+	while(isspace(s[0]))
+		s++;
+	size_t i = strlen(s)-1;
+	while(isspace(s[i]) && i>0)
+		s[i--] = '\0';
+	return s;
+}
+
 char *safe_getenv(char *env, char *def)
 {
 	char *t;
@@ -95,6 +114,12 @@ void safe_fputs(char *m, FILE *f)
 {
 	if(fputs(m, f) < 0)
 		perrordie("fputs");
+}
+
+void safe_fgets(char *m, int size, FILE *f)
+{
+	if(fgets(m, size, f) == NULL && !feof(f))
+		perrordie("fgets");
 }
 
 void safe_fprintf(FILE *f, char *m, ...)

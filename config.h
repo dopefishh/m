@@ -7,8 +7,12 @@
 	void set_##name(type n);\
 	type get_##name()
 
+void parse_config();
+void parse_cli(int argc, char **argv);
+
 ENTRYH(char *, database);
 ENTRYH(char *, config);
 ENTRYH(bool, force_reread);
+ENTRYH(bool, dont_update);
 
 #endif

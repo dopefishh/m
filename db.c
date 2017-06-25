@@ -11,6 +11,7 @@
 
 struct db *init_db()
 {
+	logmsg(debug, "Initializing db\n");
 	struct db *r = (struct db*) safe_malloc(sizeof(struct db));
 	r->head = NULL;
 	r->last_modified = safe_time(&r->initialized);
@@ -20,6 +21,7 @@ struct db *init_db()
 
 struct db *load_db(char *path)
 {
+	logmsg(debug, "Loading db at: %s\n", path);
 	struct db *db = (struct db*) safe_malloc(sizeof(struct db));
 	FILE *f = safe_fopen(path, "r");
 	db->head = NULL;
