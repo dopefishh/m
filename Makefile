@@ -1,4 +1,5 @@
 CFLAGS:=-Wall -Wextra -Werror -g
+LDFLAGS:=-lFLAC
 PROGRAM:=m
 OBJS:=file.o db.o m.o util.o xdg.o parse.o config.o log.o
 

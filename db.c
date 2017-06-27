@@ -3,11 +3,14 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
+#include <FLAC/metadata.h>
+
 #include "log.h"
 #include "config.h"
 #include "parse.h"
 #include "util.h"
 #include "db.h"
+#include "file.h"
 
 #define M_DB_VERSION 1ull
 
@@ -75,8 +78,9 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 
 	if(!S_ISDIR(buf.st_mode)){
 		if(!S_ISREG(buf.st_mode)){
-			//
 			logmsg(debug, "Skipping %s because it is not a dir\n");
+		} else {
+			process_file(p, entry);
 		}
 		return;
 	}
@@ -90,7 +94,6 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 				|| strcmp(de->d_name, "..") == 0)
 			continue;
 		pp = get_file(p, de->d_name);
-
 
 		recurse(pp, dev, entry);
 		free(pp);

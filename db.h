@@ -1,7 +1,9 @@
 #ifndef DB_H
 #define DB_H
 
+#include <time.h>
 #include <stdint.h>
+#include <stdio.h>
 
 struct db {
 	uint64_t version;
