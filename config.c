@@ -64,7 +64,7 @@ void parse_cli(int argc, char **argv)
 {
 	int oi = 0;
 	int c;
-	while((c = getopt_long(argc, argv, "c:d:fhl:nr:sv", lopts, &oi)) != -1){
+	while((c = getopt_long(argc, argv, "c:d:fhl:nr:svx", lopts, &oi)) != -1){
 		switch (c) {
 		case 'c':
 			logmsg(debug, "Set config location: %s\n", optarg);
@@ -101,6 +101,10 @@ void parse_cli(int argc, char **argv)
 		case 'v':
 			increase_loglevel();
 			logmsg(debug, "Increased loglevel\n");
+			break;
+		case 'x':
+			set_fix_filesystem(true);
+			logmsg(debug, "Fixed to one filesystem\n");
 			break;
 		default:
 			usage(stderr, argv[0]);

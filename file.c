@@ -21,8 +21,9 @@ void process_file(char *p, struct db_file *f)
 {
 	struct fmap *fe = &fmapping[0];
 	char *suffix = strrchr(p, '.');
+	f->tags = NULL;
 	while(fe->suffix != NULL && fe->parser != NULL){
-		if(suffix[0] == '\0' || strcasecmp(suffix, fe->suffix) == 0){
+		if(suffix != NULL && strcasecmp(suffix, fe->suffix) == 0){
 			if(fe->parser(p, f))
 				return;
 		}

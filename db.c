@@ -97,7 +97,8 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 	//Allocate array
 	entry->dirs = safe_calloc(entry->ndir, sizeof(struct db_entry));
 	entry->files = safe_calloc(entry->nfile, sizeof(struct db_file));
-	logmsg(debug, "%s contains %lu dirs and %lu files\n", p, entry->ndir, entry->nfile);
+	logmsg(debug, "%s contains %lu dirs and %lu files\n",
+		p, entry->ndir, entry->nfile);
 
 	//Actually process
 	safe_seekdir(d, dl);
@@ -114,7 +115,8 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 			continue;
 		}
 		if(buf.st_dev != dev && get_fix_filesystem()){
-			logmsg(debug, "Skipping %s, it is at a different fs\n");
+			logmsg(info, "Skipping %s, it is at a different fs\n",
+				de->d_name);
 			continue;
 		}
 
@@ -166,6 +168,8 @@ void print_db_entry(int indent, struct db_entry *e, FILE *f)
 	for(long i = 0; i<e->ndir; i++)
 		print_db_entry(indent+1, &(e->dirs[i]), f);
 	for(long i = 0; i<e->nfile; i++){
+		if(e->files[i].tags == NULL)
+			continue;
 		for(int j = 0; j<indent+1; j++)
 			safe_fputs("  ", f);
 		safe_fprintf(f, "| %s\n", e->files[i].path);
