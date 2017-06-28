@@ -83,7 +83,7 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 			continue;
 		}
 		if(buf.st_dev != dev && get_fix_filesystem()){
-			logmsg(debug, "Skipping %s because it is at a different fs\n");
+			logmsg(debug, "Skipping %s, it is at a different fs\n");
 			continue;
 		}
 		if(S_ISDIR(buf.st_mode))
@@ -112,7 +112,7 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 			continue;
 		}
 		if(buf.st_dev != dev && get_fix_filesystem()){
-			logmsg(debug, "Skipping %s because it is at a different fs\n");
+			logmsg(debug, "Skipping %s, it is at a different fs\n");
 			continue;
 		}
 
@@ -146,7 +146,6 @@ void update_db(struct db *db)
 	}
 
 	recurse(get_libraryroot(), buf.st_dev, db->root);
-	(void)db;
 }
 
 struct db *get_db(char *path)
@@ -171,28 +170,19 @@ void print_db(struct db *db, FILE *f)
 	safe_fprintf(f, "Last modified: %s\n", b);
 }
 
-void free_dbfile(struct db_file *f)
-{
-	if(f == NULL)
-		return;
-}
-
 void free_dbentry(struct db_entry *e)
 {
 	if(e == NULL)
 		return;
-	free(e->dir);
 	for(long i = 0; i<e->nfile; i++)
-		free_dbfile(&(e->files[i]));
+		free_file(&(e->files[i]));
 	for(long i = 0; i<e->ndir; i++)
 		free_dbentry(&(e->dirs[i]));
-	free(e->dirs);
-	free(e->files);
+	safe_free(3, e->dir, e->dirs, e->files);
 }
 
 void free_db(struct db *db)
 {
 	free_dbentry(db->root);
-	free(db->root);
-	free(db);
+	safe_free(2, db->root, db);
 }

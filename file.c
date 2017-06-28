@@ -2,6 +2,7 @@
 #include <FLAC/metadata.h>
 
 #include "db.h"
+#include "util.h"
 #include "log.h"
 
 bool process_flac(char *p, struct db_file *f);
@@ -48,4 +49,14 @@ bool process_flac(char *p, struct db_file *f)
 
 	FLAC__metadata_object_delete(md);
 	return true;
+}
+
+void free_file(struct db_file *f)
+{
+	if(f == NULL)
+		return;
+	if(f->tags != NULL){
+		safe_free(2, f->tags->values, f->tags->keys);
+	}
+	safe_free(2, f->tags, f);
 }
