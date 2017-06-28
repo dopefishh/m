@@ -56,9 +56,6 @@ void save_db(struct db *db, char *path)
 
 void recurse(char *p, dev_t dev, struct db_entry *entry)
 {
-	//init
-	entry->dir = safe_strdup(p);
-
 	//Check permissions
 	struct stat buf;
 	if(stat(p, &buf) != 0){
@@ -73,32 +70,37 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 	entry->nfile = 0;
 	entry->ndir = 0;
 	struct dirent *de;
+	char *pp;
 	while((de = safe_readdir(d)) != NULL){
 		if(strcmp(de->d_name, ".") == 0
 				|| strcmp(de->d_name, "..") == 0)
 			continue;
-		if(stat(p, &buf) != 0){
+		pp = get_file(p, de->d_name);
+		if(stat(pp, &buf) != 0){
 			logmsg(warn, "Skipping %s because of an error\n");
 			perror("stat");
+			free(pp);
 			continue;
 		}
 		if(buf.st_dev != dev && get_fix_filesystem()){
-			logmsg(debug, "Skipping %s, it is at a different fs\n");
+			logmsg(debug, "Skipping %s, it is at a different fs\n", pp);
+			free(pp);
 			continue;
 		}
 		if(S_ISDIR(buf.st_mode))
 			entry->ndir++;
 		if(S_ISREG(buf.st_mode))
 			entry->nfile++;
+		free(pp);
 	}
 
 	//Allocate array
-	entry->files = safe_calloc(entry->nfile, sizeof(struct db_file));
 	entry->dirs = safe_calloc(entry->ndir, sizeof(struct db_entry));
+	entry->files = safe_calloc(entry->nfile, sizeof(struct db_file));
+	logmsg(debug, "%s contains %lu dirs and %lu files\n", p, entry->ndir, entry->nfile);
 
 	//Actually process
 	safe_seekdir(d, dl);
-	char *pp;
 	long curdir = 0, curfile = 0;
 	while((de = safe_readdir(d)) != NULL){
 		if(strcmp(de->d_name, ".") == 0
@@ -116,17 +118,19 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 			continue;
 		}
 
-		logmsg(debug, "at: %s\n", pp);
 		if(S_ISDIR(buf.st_mode)){
 			logmsg(debug, "dir: %s\n", pp);
-			recurse(pp, dev, &(entry->dirs[curdir++]));
+			struct db_entry *e = &(entry->dirs[curdir++]);
+			e->dir = safe_strdup(de->d_name);
+			recurse(pp, dev, e);
 		}
 		if(S_ISREG(buf.st_mode)){
+			logmsg(debug, "file: %s\n", pp);
 			struct db_file *f = &(entry->files[curfile++]);
+			f->path = safe_strdup(de->d_name);
 			f->mtime = buf.st_mtime;
 			f->size = buf.st_size;
 			process_file(pp, f);
-			logmsg(debug, "file: %s\n", pp);
 		}
 		free(pp);
 	}
@@ -145,12 +149,28 @@ void update_db(struct db *db)
 		return;
 	}
 
+	db->root->dir = safe_strdup("/");
 	recurse(get_libraryroot(), buf.st_dev, db->root);
 }
 
 struct db *get_db(char *path)
 {
 	return path_exists(path) && get_force_reread() ? load_db(path) : init_db();
+}
+
+void print_db_entry(int indent, struct db_entry *e, FILE *f)
+{
+	for(int j = 0; j<indent; j++)
+		safe_fputs("  ", f);
+	safe_fprintf(f, "- %s\n", e->dir);
+	for(long i = 0; i<e->ndir; i++)
+		print_db_entry(indent+1, &(e->dirs[i]), f);
+	for(long i = 0; i<e->nfile; i++){
+		for(int j = 0; j<indent+1; j++)
+			safe_fputs("  ", f);
+		safe_fprintf(f, "| %s\n", e->files[i].path);
+	}
+
 }
 
 void print_db(struct db *db, FILE *f)
@@ -168,21 +188,22 @@ void print_db(struct db *db, FILE *f)
 	localtime_r(&db->last_modified, &tm);
 	strftime(b, 200, "%c", &tm);
 	safe_fprintf(f, "Last modified: %s\n", b);
+
+	print_db_entry(0, db->root, f);
 }
 
-void free_dbentry(struct db_entry *e)
+void free_dbentry(struct db_entry e)
 {
-	if(e == NULL)
-		return;
-	for(long i = 0; i<e->nfile; i++)
-		free_file(&(e->files[i]));
-	for(long i = 0; i<e->ndir; i++)
-		free_dbentry(&(e->dirs[i]));
-	safe_free(3, e->dir, e->dirs, e->files);
+	for(long i = 0; i<e.nfile; i++)
+		free_file(e.files[i]);
+	for(long i = 0; i<e.ndir; i++){
+		free_dbentry(e.dirs[i]);
+	}
+	safe_free(3, e.dir, e.dirs, e.files);
 }
 
 void free_db(struct db *db)
 {
-	free_dbentry(db->root);
+	free_dbentry(*db->root);
 	safe_free(2, db->root, db);
 }

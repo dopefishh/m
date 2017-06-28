@@ -29,8 +29,8 @@ struct db_file {
 
 struct db_tags {
 	long ntags;
-	char *keys;
-	char *values;
+	char **keys;
+	char **values;
 };
 
 struct db *get_db(char *path);

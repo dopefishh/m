@@ -42,6 +42,7 @@ char *get_line(FILE *f)
 	char *b = NULL;
 	while(true){
 		b = (char *)safe_realloc(b, total*=2);
+		b = b;
 		safe_fgets(b+read, total-read, f);
 		read = strlen(b);
 		if(feof(f)){
