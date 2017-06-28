@@ -39,5 +39,13 @@ bool process_flac(char *p, struct db_entry *entry)
 		logmsg(warn, "Unable to open %s as flac\n", p);
 		return false;
 	}
+
+	FLAC__StreamMetadata_VorbisComment c = md->data.vorbis_comment;
+	logmsg(debug, "Num comments: %lu\n", c.num_comments);
+	for(uint32_t i = 0; i<c.num_comments; i++){
+		logmsg(debug, "Tag: %s\n", c.comments[i].entry);
+	}
+
+	FLAC__metadata_object_delete(md);
 	return true;
 }
