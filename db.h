@@ -14,14 +14,23 @@ struct db {
 
 struct db_entry {
 	char *dir;
-	int numdirs;
-	int numfiles;
-	struct db_entry *dirs;
+	long nfile;
+	long ndir;
 	struct db_file *files;
+	struct db_entry *dirs;
 };
 
 struct db_file {
-	
+	char *path;
+	time_t mtime;
+	size_t size;
+	struct db_tags *tags;
+};
+
+struct db_tags {
+	long ntags;
+	char *keys;
+	char *values;
 };
 
 struct db *get_db(char *path);

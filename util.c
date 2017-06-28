@@ -35,6 +35,14 @@ void *safe_malloc(size_t s)
 	return r;
 }
 
+void *safe_calloc(size_t nm, size_t s)
+{
+	void *r = calloc(nm, s);
+	if (r == NULL)
+		perrordie("calloc");
+	return r;
+}
+
 void *safe_realloc(void *ptr, size_t s)
 {
 	ptr = realloc(ptr, s);
@@ -174,6 +182,19 @@ void safe_closedir(DIR *d)
 	if(closedir(d) == -1)
 		perrordie("closedir");
 
+}
+
+long safe_telldir(DIR *d)
+{
+	long r = telldir(d);
+	if(r == -1)
+		perrordie("telldir");
+	return r;
+}
+
+void safe_seekdir(DIR *d, long loc)
+{
+	seekdir(d, loc);
 }
 
 struct dirent *safe_readdir(DIR *d)

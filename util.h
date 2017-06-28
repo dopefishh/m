@@ -18,6 +18,7 @@ void die(char *msg, ...);
 
 // Allocation
 void *safe_malloc(size_t s);
+void *safe_calloc(size_t nm, size_t s);
 void *safe_realloc(void *ptr, size_t s);
 void safe_free(int count, ...);
 
@@ -40,6 +41,8 @@ size_t safe_fwrite(void *ptr, size_t size, size_t nmemb, FILE *f);
 // Directory
 DIR *safe_opendir(char *d);
 void safe_closedir(DIR *d);
+long safe_telldir(DIR *d);
+void safe_seekdir(DIR *d, long loc);
 struct dirent *safe_readdir(DIR *d);
 
 // Time

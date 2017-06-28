@@ -3,6 +3,6 @@
 
 #include "db.h"
 
-void process_file(char *p, struct db_entry *db);
+void process_file(char *p, struct db_file *f);
 
 #endif
