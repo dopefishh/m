@@ -9,6 +9,7 @@ struct db {
 	uint64_t version;
 	time_t last_modified;
 	time_t initialized;
+	char *rootpath;
 	struct db_entry *root;
 };
 

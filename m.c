@@ -29,8 +29,6 @@ int main(int argc, char **argv)
 
 	//Load database
 	struct db *db = get_db(get_database());
-
-	//Update db
 	update_db(db);
 
 	//Save database
@@ -41,5 +39,6 @@ int main(int argc, char **argv)
 	free_db(db);
 	free(get_database());
 	free(get_config());
+	free(get_libraryroot());
 	return EXIT_SUCCESS;
 }

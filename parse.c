@@ -13,14 +13,14 @@ uint64_t parse_int64(FILE *f)
 char *parse_string(FILE *f)
 {
 	size_t total = 16, read = 0;
-	char *b = (char *)safe_malloc(total);
-	while(b[read] != '\0'){
+	char *b = safe_malloc(total);
+	do {
 		if(read >= total)
-			b = (char *)safe_realloc(b, total*=2);
+			b = safe_realloc(b, total*=2);
 		b[read++] = safe_getc(f);
-		if(b[read] == EOF)
+		if(b[read-1] == EOF)
 			die("Expected string");
-	}
+	} while(b[read-1] != '\0');
 	return b;
 }
 
