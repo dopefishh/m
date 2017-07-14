@@ -27,75 +27,6 @@ struct db *init_db()
 	return r;
 }
 
-void parse_db_file(FILE *f, struct db_file *r)
-{
-	logmsg(debug, "Parse db_file\n");
-	r->path = parse_string(f);
-	r->mtime = parse_int64(f);
-	r->size = parse_int64(f);
-	r->tags = NULL;
-	long ntags = parse_int64(f);
-	if(ntags == 0){
-		logmsg(debug, "Parsed non music db_file\n");
-		return;
-	}
-	r->tags = safe_malloc(sizeof(struct db_tags));
-	r->tags->ntags = ntags;
-	r->tags->keys = safe_malloc(ntags*sizeof(char *));
-	r->tags->values = safe_malloc(ntags*sizeof(char *));
-	for(long i = 0; i<ntags; i++){
-		r->tags->keys[i] = parse_string(f);
-		r->tags->values[i] = parse_string(f);
-	}
-	logmsg(debug, "Parsed db_file with %lu tags: %s\n", ntags, r->path);
-}
-
-void parse_db_entry(FILE *f, struct db_entry *r)
-{
-	logmsg(debug, "Parse db_entry\n");
-	r->dir = parse_string(f);
-	r->nfile = parse_int64(f);
-	r->ndir = parse_int64(f);
-	r->files = safe_calloc(r->nfile, sizeof(struct db_file));
-	r->dirs = safe_calloc(r->ndir, sizeof(struct db_entry));
-	for(long i = 0; i<r->nfile; i++)
-		parse_db_file(f, &r->files[i]);
-	for(long i = 0; i<r->ndir; i++)
-		parse_db_entry(f, &r->dirs[i]);
-	logmsg(debug, "Parsed db_entry: %s\n", r->dir);
-}
-
-void write_db_file(FILE *f, struct db_file *e)
-{
-	logmsg(debug, "Write db_file: %s\n", e->path);
-	write_string(f, e->path);
-	write_int64(f, e->mtime);
-	write_int64(f, e->size);
-	if(e->tags == NULL){
-		write_int64(f, 0);
-		logmsg(debug, "Written non music db_file\n");
-		return;
-	}
-	write_int64(f, e->tags->ntags);
-	for(long i = 0; i<e->tags->ntags; i++){
-		write_string(f, e->tags->keys[i]);
-		write_string(f, e->tags->values[i]);
-	}
-	logmsg(debug, "Written db_file with %lu tags\n", e->tags->ntags);
-}
-
-void write_db_entry(FILE *f, struct db_entry *e)
-{
-	logmsg(debug, "Write db_entry: %s\n", e->dir);
-	write_string(f, e->dir);
-	write_int64(f, e->nfile);
-	write_int64(f, e->ndir);
-	for(long i = 0; i<e->nfile; i++)
-		write_db_file(f, &e->files[i]);
-	for(long i = 0; i<e->ndir; i++)
-		write_db_entry(f, &e->dirs[i]);
-}
-
 struct db *load_db(char *path)
 {
 	logmsg(debug, "Loading db at: %s\n", path);
@@ -172,6 +103,8 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 	//Check if we already have data
 	if(update){
 		logmsg(debug, "This db already contains stuff for this dir\n");
+		logmsg(debug, "Old files: %d, new files: %d\n", entry->nfile, curfile);
+		logmsg(debug, "Old dirs: %d, new dirs: %d\n", entry->ndir, curdir);
 		return;
 	// We don't already have data on this
 	} else {
@@ -279,7 +212,12 @@ void print_db_entry(int indent, struct db_entry *e, FILE *f)
 			continue;
 		for(int j = 0; j<indent+1; j++)
 			safe_fputs("  ", f);
-		safe_fprintf(f, "| %s\n", e->files[i].path);
+		safe_fprintf(f, "| %s", e->files[i].path);
+		if(e->files[i].tags != NULL)
+			safe_fprintf(f,
+				" with %lu tags\n", e->files[i].tags->ntags);
+		else
+			safe_fputs("\n", f);
 	}
 
 }
