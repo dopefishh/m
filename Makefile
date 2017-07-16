@@ -1,7 +1,8 @@
 CFLAGS:=-Wall -Wextra -Werror -g
-LDFLAGS:=-lFLAC
+LDFLAGS:=-lFLAC -lvorbisfile
 PROGRAM:=m
-OBJS:=file.o db.o m.o util.o xdg.o parse.o config.o log.o
+OBJS:=file.o db.o m.o util.o xdg.o parse.o config.o log.o file_flac.o file_ogg.o
+HEADERS:=cfg.h
 
 all: $(PROGRAM)
 

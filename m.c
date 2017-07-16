@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 	//Load database and possibly update
 	struct db *db = get_db(get_database());
 	if(!get_dont_update()){
-		logmsg(info, "Not updating db\n");
+		logmsg(info, "Updating db\n");
 		update_db(db);
 	} else {
 		logmsg(info, "Not updating db\n");
