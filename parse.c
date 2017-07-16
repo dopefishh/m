@@ -44,7 +44,6 @@ char *get_line(FILE *f)
 	char *b = NULL;
 	while(true){
 		b = (char *)safe_realloc(b, total*=2);
-		b = b;
 		safe_fgets(b+read, total-read, f);
 		read = strlen(b);
 		if(feof(f)){
@@ -71,7 +70,7 @@ void parse_db_file(FILE *f, struct db_file *r)
 	r->mtime = parse_int64(f);
 	r->size = parse_int64(f);
 	r->tags = NULL;
-	long ntags = parse_int64(f);
+	uint64_t ntags = parse_int64(f);
 	if(ntags == 0){
 		logmsg(debug, "Parsed non music db_file\n");
 		return;
@@ -80,7 +79,7 @@ void parse_db_file(FILE *f, struct db_file *r)
 	r->tags->ntags = ntags;
 	r->tags->keys = safe_malloc(ntags*sizeof(char *));
 	r->tags->values = safe_malloc(ntags*sizeof(char *));
-	for(long i = 0; i<ntags; i++){
+	for(uint64_t i = 0; i<ntags; i++){
 		r->tags->keys[i] = parse_string(f);
 		r->tags->values[i] = parse_string(f);
 	}
@@ -95,9 +94,9 @@ void parse_db_entry(FILE *f, struct db_entry *r)
 	r->ndir = parse_int64(f);
 	r->files = safe_calloc(r->nfile, sizeof(struct db_file));
 	r->dirs = safe_calloc(r->ndir, sizeof(struct db_entry));
-	for(long i = 0; i<r->nfile; i++)
+	for(uint64_t i = 0; i<r->nfile; i++)
 		parse_db_file(f, &r->files[i]);
-	for(long i = 0; i<r->ndir; i++)
+	for(uint64_t i = 0; i<r->ndir; i++)
 		parse_db_entry(f, &r->dirs[i]);
 	logmsg(debug, "Parsed db_entry: %s\n", r->dir);
 }
@@ -114,7 +113,7 @@ void write_db_file(FILE *f, struct db_file *e)
 		return;
 	}
 	write_int64(f, e->tags->ntags);
-	for(long i = 0; i<e->tags->ntags; i++){
+	for(uint64_t i = 0; i<e->tags->ntags; i++){
 		write_string(f, e->tags->keys[i]);
 		write_string(f, e->tags->values[i]);
 	}
@@ -127,8 +126,8 @@ void write_db_entry(FILE *f, struct db_entry *e)
 	write_string(f, e->dir);
 	write_int64(f, e->nfile);
 	write_int64(f, e->ndir);
-	for(long i = 0; i<e->nfile; i++)
+	for(uint64_t i = 0; i<e->nfile; i++)
 		write_db_file(f, &e->files[i]);
-	for(long i = 0; i<e->ndir; i++)
+	for(uint64_t i = 0; i<e->ndir; i++)
 		write_db_entry(f, &e->dirs[i]);
 }

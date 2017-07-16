@@ -15,8 +15,8 @@ struct db {
 
 struct db_entry {
 	char *dir;
-	long nfile;
-	long ndir;
+	uint64_t nfile;
+	uint64_t ndir;
 	struct db_file *files;
 	struct db_entry *dirs;
 };
@@ -29,7 +29,7 @@ struct db_file {
 };
 
 struct db_tags {
-	long ntags;
+	uint64_t ntags;
 	char **keys;
 	char **values;
 };

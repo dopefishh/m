@@ -12,7 +12,16 @@
 #include "db.h"
 #include "file.h"
 
+void print_db_entry(int indent, struct db_entry *e, FILE *f);
+
 #define M_DB_VERSION 1ull
+void free_files(struct db_file *f, int nfile);
+void free_dirs(struct db_entry *d, int ndir);
+
+struct intlist {
+	int value;
+	struct intlist *next;
+};
 
 struct db *init_db()
 {
@@ -62,7 +71,13 @@ void save_db(struct db *db, char *path)
 
 void recurse(char *p, dev_t dev, struct db_entry *entry)
 {
-	bool update = entry->files != NULL || entry->dirs != NULL;
+	//Save old values
+	struct db_file *oldfiles = entry->files;
+	struct db_entry *olddirs = entry->dirs;
+	uint64_t oldnfile = oldfiles == NULL ? 0 : entry->nfile;
+	uint64_t oldndir = olddirs == NULL ? 0 : entry->ndir;
+	logmsg(debug, "Recursing in %s, with %d %d olds\n", p, oldnfile, oldndir);
+
 	//Check permissions
 	struct stat buf;
 	if(stat(p, &buf) != 0){
@@ -89,10 +104,13 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 			continue;
 		}
 		if(buf.st_dev != dev && get_fix_filesystem()){
-			logmsg(debug, "Skipping %s, it is at a different fs\n", pp);
+			logmsg(debug,
+				"Skipping %s, it is at a different fs\n", pp);
 			free(pp);
 			continue;
 		}
+
+		//Check if file already exists
 		if(S_ISDIR(buf.st_mode))
 			curdir++;
 		if(S_ISREG(buf.st_mode))
@@ -100,20 +118,11 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 		free(pp);
 	}
 
-	//Check if we already have data
-	if(update){
-		logmsg(debug, "This db already contains stuff for this dir\n");
-		logmsg(debug, "Old files: %d, new files: %d\n", entry->nfile, curfile);
-		logmsg(debug, "Old dirs: %d, new dirs: %d\n", entry->ndir, curdir);
-		return;
-	// We don't already have data on this
-	} else {
-		entry->nfile = curfile;
-		entry->ndir = curdir;
-		//Allocate array
-		entry->dirs = safe_calloc(entry->ndir, sizeof(struct db_entry));
-		entry->files = safe_calloc(entry->nfile, sizeof(struct db_file));
-	}
+	//Allocate the arrays
+	entry->nfile = curfile;
+	entry->ndir = curdir;
+	entry->dirs = safe_calloc(entry->ndir, sizeof(struct db_entry));
+	entry->files = safe_calloc(entry->nfile, sizeof(struct db_file));
 
 	logmsg(debug, "%s contains %lu dirs and %lu files\n",
 		p, entry->ndir, entry->nfile);
@@ -140,32 +149,58 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 		}
 
 		if(S_ISDIR(buf.st_mode)){
-			//Find matching entry
-			if(update){
+			logmsg(debug, "dirno %d: %s\n", curdir, pp);
+			//Find matching entry, this will stop immediatly when
+			//there was no old entry
+			struct db_entry *e = &entry->dirs[curdir++];
+			e->dir = safe_strdup(de->d_name);
 
-			} else {
-				logmsg(debug, "dir: %s\n", pp);
-				struct db_entry *e = &(entry->dirs[curdir++]);
-				e->dir = safe_strdup(de->d_name);
-				recurse(pp, dev, e);
+			for(uint64_t i = 0; i<oldndir; i++){
+				if(strcmp(de->d_name, olddirs[i].dir) == 0){
+					logmsg(debug, "Found an old dbentry\n");
+					//Found and is as old:
+					e->nfile = olddirs[i].nfile;
+					e->ndir = olddirs[i].ndir;
+					e->files = olddirs[i].files;
+					e->dirs = olddirs[i].dirs;
+					i = oldndir;
+				}
 			}
+
+			recurse(pp, dev, e);
 		}
 		if(S_ISREG(buf.st_mode)){
-			//Find matching entry
-			if(update){
+			logmsg(debug, "file: %s\n", pp);
+			struct db_file *f = &entry->files[curfile++];
+			f->path = safe_strdup(de->d_name);
+			f->mtime = buf.st_mtime;
+			f->size = buf.st_size;
+			f->tags = NULL;
+			for(uint64_t i = 0; i<oldnfile; i++){
+				if(strcmp(de->d_name, oldfiles[i].path) == 0){
+					logmsg(debug, "Found an old dbentry\n");
+					if(buf.st_mtime <= oldfiles[i].mtime){
+						logmsg(debug, "And it was as old\n");
+						f->tags = oldfiles[i].tags;
+						oldfiles[i].tags = NULL;
+					}
+					i = oldnfile;
+				}
+			}
 
-			} else {
-				logmsg(debug, "file: %s\n", pp);
-				struct db_file *f = &(entry->files[curfile++]);
-				f->path = safe_strdup(de->d_name);
-				f->mtime = buf.st_mtime;
-				f->size = buf.st_size;
+			if(f->tags == NULL){
 				process_file(pp, f);
 			}
 		}
 		free(pp);
 	}
 	safe_closedir(d);
+	for(uint64_t i = 0; i<oldndir; i++)
+		free(olddirs[i].dir);
+	free(olddirs);
+	for(uint64_t i = 0; i<oldnfile; i++)
+		free_file(oldfiles[i]);
+	free(oldfiles);
 }
 
 void update_db(struct db *db)
@@ -181,6 +216,7 @@ void update_db(struct db *db)
 			db->rootpath, get_libraryroot());
 		return;
 	}
+	print_db(db, stdout);
 
 	recurse(get_libraryroot(), buf.st_dev, db->root);
 }
@@ -204,10 +240,10 @@ void print_db_entry(int indent, struct db_entry *e, FILE *f)
 {
 	for(int j = 0; j<indent; j++)
 		safe_fputs("  ", f);
-	safe_fprintf(f, "- %s\n", e->dir);
-	for(long i = 0; i<e->ndir; i++)
+	safe_fprintf(f, "- %s (%dd, %df)\n", e->dir, e->ndir, e->nfile);
+	for(uint64_t i = 0; i<e->ndir; i++)
 		print_db_entry(indent+1, &(e->dirs[i]), f);
-	for(long i = 0; i<e->nfile; i++){
+	for(uint64_t i = 0; i<e->nfile; i++){
 		if(e->files[i].tags == NULL)
 			continue;
 		for(int j = 0; j<indent+1; j++)
@@ -245,12 +281,11 @@ void print_db(struct db *db, FILE *f)
 
 void free_dbentry(struct db_entry e)
 {
-	for(long i = 0; i<e.nfile; i++)
+	for(uint64_t i = 0; i<e.nfile; i++)
 		free_file(e.files[i]);
-	for(long i = 0; i<e.ndir; i++){
+	for(uint64_t i = 0; i<e.ndir; i++)
 		free_dbentry(e.dirs[i]);
-	}
-	safe_free(3, e.dir, e.dirs, e.files);
+	safe_free(3, e.dir, e.files, e.dirs);
 }
 
 void free_db(struct db *db)

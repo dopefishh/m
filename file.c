@@ -71,7 +71,7 @@ bool process_flac(char *p, struct db_file *f)
 void free_file(struct db_file f)
 {
 	if(f.tags != NULL){
-		for(long i = 0; i<f.tags->ntags; i++)
+		for(uint64_t i = 0; i<f.tags->ntags; i++)
 			safe_free(2, f.tags->values[i], f.tags->keys[i]);
 		safe_free(3, f.tags->values, f.tags->keys, f.tags);
 	}
