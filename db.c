@@ -72,11 +72,11 @@ void save_db(struct db *db, char *path)
 void recurse(char *p, dev_t dev, struct db_entry *entry)
 {
 	//Save old values
-	struct db_file *oldfiles = entry->files;
-	struct db_entry *olddirs = entry->dirs;
-	uint64_t oldnfile = oldfiles == NULL ? 0 : entry->nfile;
-	uint64_t oldndir = olddirs == NULL ? 0 : entry->ndir;
-	logmsg(debug, "Recursing in %s, with %d %d olds\n", p, oldnfile, oldndir);
+	struct db_file *oldfs = entry->files;
+	struct db_entry *oldds = entry->dirs;
+	uint64_t oldnf = oldfs == NULL ? 0 : entry->nfile;
+	uint64_t oldnd = oldds == NULL ? 0 : entry->ndir;
+	logmsg(debug, "Recursing in %s, with %d %d olds\n", p, oldnf, oldnd);
 
 	//Check permissions
 	struct stat buf;
@@ -155,15 +155,14 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 			struct db_entry *e = &entry->dirs[curdir++];
 			e->dir = safe_strdup(de->d_name);
 
-			for(uint64_t i = 0; i<oldndir; i++){
-				if(strcmp(de->d_name, olddirs[i].dir) == 0){
+			for(uint64_t i = 0; i<oldnd; i++){
+				if(strcmp(de->d_name, oldds[i].dir) == 0){
 					logmsg(debug, "Found an old dbentry\n");
-					//Found and is as old:
-					e->nfile = olddirs[i].nfile;
-					e->ndir = olddirs[i].ndir;
-					e->files = olddirs[i].files;
-					e->dirs = olddirs[i].dirs;
-					i = oldndir;
+					e->nfile = oldds[i].nfile;
+					e->ndir = oldds[i].ndir;
+					e->files = oldds[i].files;
+					e->dirs = oldds[i].dirs;
+					i = oldnd;
 				}
 			}
 
@@ -176,15 +175,15 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 			f->mtime = buf.st_mtime;
 			f->size = buf.st_size;
 			f->tags = NULL;
-			for(uint64_t i = 0; i<oldnfile; i++){
-				if(strcmp(de->d_name, oldfiles[i].path) == 0){
+			for(uint64_t i = 0; i<oldnf; i++){
+				if(strcmp(de->d_name, oldfs[i].path) == 0){
 					logmsg(debug, "Found an old dbentry\n");
-					if(buf.st_mtime <= oldfiles[i].mtime){
-						logmsg(debug, "And it was as old\n");
-						f->tags = oldfiles[i].tags;
-						oldfiles[i].tags = NULL;
+					if(buf.st_mtime <= oldfs[i].mtime){
+						f->tags = oldfs[i].tags;
+						//Make sure they are not freed
+						oldfs[i].tags = NULL;
 					}
-					i = oldnfile;
+					i = oldnf;
 				}
 			}
 
@@ -195,12 +194,13 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 		free(pp);
 	}
 	safe_closedir(d);
-	for(uint64_t i = 0; i<oldndir; i++)
-		free(olddirs[i].dir);
-	free(olddirs);
-	for(uint64_t i = 0; i<oldnfile; i++)
-		free_file(oldfiles[i]);
-	free(oldfiles);
+
+	//Free stuff up
+	for(uint64_t i = 0; i<oldnd; i++)
+		free(oldds[i].dir);
+	for(uint64_t i = 0; i<oldnf; i++)
+		free_file(oldfs[i]);
+	safe_free(2, oldfs, oldds);
 }
 
 void update_db(struct db *db)
