@@ -1,17 +1,20 @@
-#include <vorbis/vorbisfile.h>
+#include <stdbool.h>
+
+#include <opus/opusfile.h>
 
 #include "file.h"
-#include "db.h"
 #include "util.h"
+#include "db.h"
 #include "log.h"
 
-bool process_ogg(char *p, struct db_file *f)
+bool process_opus(char *p, struct db_file *f)
 {
-	OggVorbis_File vf;
-	if(ov_fopen(p, &vf) != 0)
+	int r;
+	OggOpusFile *of = op_open_file (p, &r);
+	if(r != 0)
 		return false;
 
-	vorbis_comment *c = ov_comment(&vf, -1);
+	const OpusTags* c = op_tags(of, -1);
 	file_tag_init(f, c->comments);
 
 	for(int i = 0; i<c->comments; i++)
@@ -19,6 +22,6 @@ bool process_ogg(char *p, struct db_file *f)
 				&f->tags->keys[i], &f->tags->values[i]))
 			f->tags->ntags--;
 
-	ov_clear(&vf);
+	op_free(of);
 	return true;
 }
