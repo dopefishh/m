@@ -12,8 +12,6 @@
 #include "db.h"
 #include "file.h"
 
-void print_db_entry(int indent, struct db_entry *e, FILE *f);
-
 #define M_DB_VERSION 1ull
 void free_files(struct db_file *f, int nfile);
 void free_dirs(struct db_entry *d, int ndir);
@@ -216,7 +214,6 @@ void update_db(struct db *db)
 			db->rootpath, get_libraryroot());
 		return;
 	}
-	print_db(db, stdout);
 
 	recurse(get_libraryroot(), buf.st_dev, db->root);
 }

@@ -55,7 +55,7 @@ void usage(FILE *out, char *arg0)
 		"  -f,--force            Force reread the entire database\n"
 		"  -n,--dontupdate       Don't update the database\n"
 		"  -l,--log         FILE Log to FILE instead of stdout\n"
-		"  -r,--libraryroot FILE Log to FILE instead of stdout\n"
+		"  -r,--libraryroot FILE User FILE as the database root\n\n"
 		"  -x,--filesystem       Stay within one filesystem\n"
 		, arg0);
 }

@@ -43,7 +43,7 @@ char *get_line(FILE *f)
 	size_t total = 16, read = 0;
 	char *b = NULL;
 	while(true){
-		b = (char *)safe_realloc(b, total*=2);
+		b = safe_realloc(b, total*=2);
 		safe_fgets(b+read, total-read, f);
 		read = strlen(b);
 		if(feof(f)){

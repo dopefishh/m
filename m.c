@@ -8,7 +8,6 @@
 #include "xdg.h"
 #include "config.h"
 
-
 int main(int argc, char **argv)
 {
 	//Initialize
@@ -27,9 +26,14 @@ int main(int argc, char **argv)
 	parse_cli(argc, argv);
 	parse_config();
 
-	//Load database
+	//Load database and possibly update
 	struct db *db = get_db(get_database());
-	update_db(db);
+	if(!get_dont_update()){
+		logmsg(info, "Not updating db\n");
+		update_db(db);
+	} else {
+		logmsg(info, "Not updating db\n");
+	}
 
 	//Save database
 	print_db(db, stdout);
