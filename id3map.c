@@ -6,29 +6,23 @@
 #include "util.h"
 #include "log.h"
 
-static struct listitem *head = NULL;
-
-void id3map_parse_conf(char *v){
-	char *tok, *key;
-	tok = strtok(v, ",");
-	while(tok != NULL){
-		key = strchr(tok, ':');
-		if(key == NULL) {
-			logmsg(warn, "Malformed id3mapentry, "
-				"no ':' found\n");
-			continue;
-		} else {
-			key++[0] = '\0';
-			id3map_add(trim(tok), trim(key));
-		}
-		tok = strtok(NULL, ",");
-	}
-}
-
 struct id3map {
 	char id[5];
 	char *key;
 };
+
+static struct listitem *head = NULL;
+
+void id3map_add_from_string(char *id)
+{
+	char *key= strchr(id, ':');
+	if(key == NULL) {
+		logmsg(warn, "Malformed id3mapentry, no ':' found\n");
+		return;
+	}
+	key++[0] = '\0';
+	id3map_add(trim(id), trim(key));
+}
 
 void id3map_add(char *id, char *key)
 {
@@ -51,8 +45,9 @@ bool id3map_equal(void *a, void *b)
 char *id3map_get(char *id)
 {
 	logmsg(debug, "Getting id3map entry for %s\n", id);
+	uint32_t rr;
 	struct id3map *r = (struct id3map *)list_find(
-		head, (void *)id, &id3map_equal);
+		head, (void *)id, &id3map_equal, &rr); //TODO maybe this should be NULL
 	return r == NULL ? id : r->key;
 }
 

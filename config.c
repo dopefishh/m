@@ -30,15 +30,34 @@ static struct option lopts[] =
 	{"verbose",     no_argument,       0, 'v'},
 	{"silent",      no_argument,       0, 's'},
 	{"help",        no_argument,       0, 'h'},
-	{"version",     no_argument,       0, 'e'},
+	{"version",     no_argument,       0, 'V'},
 	{"config",      required_argument, 0, 'c'},
 	{"libraryroot", no_argument,       0, 'r'},
 	{"db",          required_argument, 0, 'd'},
 	{"force",       no_argument,       0, 'f'},
 	{"dontupdate",  no_argument,       0, 'n'},
 	{"filesystem",  no_argument,       0, 'x'},
+	{"exclude",     required_argument, 0, 'e'},
+#ifdef USE_MP3
+	{"id3map",      required_argument, 0, '3'},
+#endif
 	{0, 0, 0, 0}
 };
+
+static const char *optstring = \
+	"c:"   \
+	"d:"   \
+	"f"    \
+	"h"    \
+	"l:"   \
+	"n"    \
+	"r:"   \
+	"s"    \
+	"v"    \
+	"V"    \
+	"x"    \
+	"3:"   \
+	"e:";
 
 void version(FILE *out)
 {
@@ -64,6 +83,12 @@ void usage(FILE *out, char *arg0)
 		"  -l,--log         FILE   Log to FILE instead of stdout\n"
 		"  -r,--libraryroot FILE   User FILE as the database root\n\n"
 		"  -x,--filesystem         Stay within one filesystem\n"
+		"  -e,--exclude     GLOB   Add GLOB to the exclusion list\n"
+#ifdef USE_MP3
+		"\n"
+		"MP3 specific options\n"
+		"  -3,--id3map    ID:KEY   Add ID:KEY to the id3map\n"
+#endif
 		, arg0);
 }
 
@@ -71,7 +96,7 @@ void parse_cli(int argc, char **argv)
 {
 	int oi = 0;
 	int c;
-	while((c = getopt_long(argc, argv, "c:d:fhl:nr:svx", lopts, &oi)) != -1){
+	while((c = getopt_long(argc, argv, optstring, lopts, &oi)) != -1){
 		switch (c) {
 		case 'c':
 			logmsg(debug, "Set config location: %s\n", optarg);
@@ -81,7 +106,7 @@ void parse_cli(int argc, char **argv)
 			logmsg(debug, "DB location: %s\n", optarg);
 			set_database(rtrimc(resolve_tilde(optarg), '/'));
 			break;
-		case 'e':
+		case 'V':
 			version(stdout);
 			exit(EXIT_SUCCESS);
 		case 'f':
@@ -113,6 +138,16 @@ void parse_cli(int argc, char **argv)
 			set_fix_filesystem(true);
 			logmsg(debug, "Fixed to one filesystem\n");
 			break;
+		case 'e':
+			exclude_add(safe_strdup(optarg));
+			logmsg(debug, "Exclusion pattern added\n");
+			break;
+#ifdef USE_MP3
+		case '3':
+			id3map_add_from_string(optarg);
+			logmsg(debug, "Id3map mapping added\n");
+			break;
+#endif
 		default:
 			usage(stderr, argv[0]);
 			die("");
@@ -164,7 +199,12 @@ void parse_config()
 #ifdef USE_MP3
 		} else if (strcmp("id3mapping", k) == 0){
 			logmsg(debug, "Parsing id3map entr{y,ies}\n", v);
-			id3map_parse_conf(v);
+			char *tok;
+			tok = strtok(v, ",");
+			while(tok != NULL){
+				id3map_add_from_string(tok);
+				tok = strtok(NULL, ",");
+			}
 #endif
 		} else if (strcmp("exclude", k) == 0){
 			logmsg(debug, "Parsing exclude pattern\n", v);
