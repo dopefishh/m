@@ -20,3 +20,10 @@ tags are translated to their according vorbiscomments standard.
   `conf.mk`.
 - Build by running `make`
 - Install by running `make install` (not implemented yet)
+
+## Usage
+### Command line
+todo
+
+### Config file
+todo
