@@ -51,8 +51,9 @@ void process_tag(unsigned int nfields, union id3_field *f, char **key, char **va
 			*value = safe_strdup(buf);
 			break;
 		case ID3_FIELD_TYPE_BINARYDATA:
-			*value = safe_strdup(id3_field_getbinarydata(
-				&f[i], &f[i].binary.length));
+			logmsg(debug, "Binary tags not supported, images?\n");
+//			*value = safe_strdup(id3_field_getbinarydata(
+//				&f[i], NULL);
 			break;
 		}
 	}
