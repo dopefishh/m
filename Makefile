@@ -6,7 +6,7 @@ LDFLAGS?=
 
 VERSION:=0.1
 PROGRAM:=m
-OBJS:=file.o db.o m.o util.o xdg.o parse.o config.o log.o
+OBJS:=file.o db.o m.o util.o xdg.o parse.o config.o log.o exclude.o list.o
 
 ifdef USE_FLAC
 CFLAGS+=-DUSE_FLAC $(shell pkg-config --cflags flac)
@@ -29,7 +29,7 @@ endif
 ifdef USE_MP3
 CFLAGS+=-DUSE_MP3 $(shell pkg-config --cflags id3tag)
 LDFLAGS+=$(shell pkg-config --libs id3tag)
-OBJS+=file_mp3.o
+OBJS+=file_mp3.o id3map.o
 endif
 
 all: $(PROGRAM)

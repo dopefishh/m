@@ -26,6 +26,7 @@ void safe_free(int count, ...);
 char *safe_strcat(int count, ...);
 char *safe_strdup(const char *s);
 char *trim(char *s);
+char *rtrimc(char *s, char c);
 
 // File
 FILE *safe_fopen(char *path, char *mode);

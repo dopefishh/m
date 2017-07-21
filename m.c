@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 	}
 
 	//Save database
-//	print_db(db, stdout);
+	print_db(db, stdout);
 	save_db(db, get_database());
 
 	//Free up pointers

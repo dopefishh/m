@@ -1,6 +1,9 @@
 # Database file location
 database = ~/.local/share/m/db
 
+# Glob patterns of files/directories that should be excluded
+exclude = *Giant*
+
 # ID3 mapping, only applicable if mp3 support is enabled
 # This is a comma separated list containing key:value pairs.
 # This mapping below is the default mapping. Duplicates automaticall overwrite

@@ -97,6 +97,14 @@ char *trim(char *s)
 	return s;
 }
 
+char *rtrimc(char *s, char c)
+{
+	size_t i = strlen(s)-1;
+	while(c == s[i] && i>0)
+		s[i--] = '\0';
+	return s;
+}
+
 char *safe_getenv(char *env, char *def)
 {
 	char *t;

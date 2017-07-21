@@ -3,9 +3,8 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
-#include <FLAC/metadata.h>
-
 #include "log.h"
+#include "exclude.h"
 #include "config.h"
 #include "parse.h"
 #include "util.h"
@@ -67,8 +66,16 @@ void save_db(struct db *db, char *path)
 	safe_fclose(f);
 }
 
-void recurse(char *p, dev_t dev, struct db_entry *entry)
+void recurse(char *rp, dev_t dev, struct db_entry *entry)
 {
+	char *p = realpath(rp, NULL);
+	//Go through exclude list to see if we need to skip it
+	if(exclude(rp)){
+		logmsg(warn, "Skipping %s because of an exclusion pattern\n", p);
+		free(p);
+		return;
+	}
+
 	//Save old values
 	struct db_file *oldfs = entry->files;
 	struct db_entry *oldds = entry->dirs;
@@ -79,13 +86,19 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 	//Check permissions
 	struct stat buf;
 	if(stat(p, &buf) != 0){
-		logmsg(warn, "Skipping %s because of an error\n");
+		logmsg(warn, "Skipping %s because of an error\n", p);
 		perror("stat");
 		return;
 	}
 
 	//Read directory and count files
-	DIR *d = safe_opendir(p);
+	DIR *d = opendir(p);
+	if(d == NULL){
+		logmsg(warn, "Skipping %s because opendir failed\n", p);
+		perror("opendir");
+		return;
+	}
+
 	long dl = safe_telldir(d);
 	long curdir = 0, curfile = 0;
 	struct dirent *de;
@@ -96,7 +109,7 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 			continue;
 		pp = get_file(p, de->d_name);
 		if(stat(pp, &buf) != 0){
-			logmsg(warn, "Skipping %s because of an error\n");
+			logmsg(warn, "Skipping %s because of an error\n", pp);
 			perror("stat");
 			free(pp);
 			continue;
@@ -136,7 +149,7 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 
 		pp = get_file(p, de->d_name);
 		if(stat(pp, &buf) != 0){
-			logmsg(warn, "Skipping %s because of an error\n");
+			logmsg(warn, "Skipping %s because of an error\n", pp);
 			perror("stat");
 			continue;
 		}
@@ -198,7 +211,7 @@ void recurse(char *p, dev_t dev, struct db_entry *entry)
 		free(oldds[i].dir);
 	for(uint64_t i = 0; i<oldnf; i++)
 		free_file(oldfs[i]);
-	safe_free(2, oldfs, oldds);
+	safe_free(3, oldfs, oldds, p);
 }
 
 void update_db(struct db *db)

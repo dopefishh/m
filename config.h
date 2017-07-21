@@ -22,6 +22,7 @@ ENTRYH(bool, fix_filesystem);
 ENTRYH(char *, id3mapping);
 void id3map_add(char *, char *);
 char *id3map_get(char *);
+void id3map_free();
 #endif
 
 #endif

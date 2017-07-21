@@ -5,8 +5,13 @@
 
 #include "config.h"
 #include "util.h"
+#include "exclude.h"
 #include "parse.h"
 #include "log.h"
+
+#ifdef USE_MP3
+#include "id3map.h"
+#endif
 
 #define FREE(i) free(i);
 #define NOT_FREE(i)
@@ -47,18 +52,18 @@ void usage(FILE *out, char *arg0)
 		"Usage: %s [OPTS]\n"
 		"\n"
 		"Options:\n"
-		"  -v,--verbose     Increase verbosity\n"
-		"  -s,--silent      Decrease verbosity\n"
-		"  -h,--help        Print this help\n"
-		"  --version        Print the version\n"
+		"  -v,--verbose            Increase verbosity\n"
+		"  -s,--silent             Decrease verbosity\n"
+		"  -h,--help               Print this help\n"
+		"  --version               Print the version\n"
 		"\n"
-		"  -c,--config      FILE Use the specified config\n"
-		"  -d,--db          FILE Use the specified database\n"
-		"  -f,--force            Force reread the entire database\n"
-		"  -n,--dontupdate       Don't update the database\n"
-		"  -l,--log         FILE Log to FILE instead of stdout\n"
-		"  -r,--libraryroot FILE User FILE as the database root\n\n"
-		"  -x,--filesystem       Stay within one filesystem\n"
+		"  -c,--config      FILE   Use the specified config\n"
+		"  -d,--db          FILE   Use the specified database\n"
+		"  -f,--force              Force reread the entire database\n"
+		"  -n,--dontupdate         Don't update the database\n"
+		"  -l,--log         FILE   Log to FILE instead of stdout\n"
+		"  -r,--libraryroot FILE   User FILE as the database root\n\n"
+		"  -x,--filesystem         Stay within one filesystem\n"
 		, arg0);
 }
 
@@ -74,7 +79,7 @@ void parse_cli(int argc, char **argv)
 			break;
 		case 'd':
 			logmsg(debug, "DB location: %s\n", optarg);
-			set_database(resolve_tilde(optarg));
+			set_database(rtrimc(resolve_tilde(optarg), '/'));
 			break;
 		case 'e':
 			version(stdout);
@@ -158,22 +163,12 @@ void parse_config()
 			set_database(resolve_tilde(v));
 #ifdef USE_MP3
 		} else if (strcmp("id3mapping", k) == 0){
-			logmsg(debug, "Parsing id3map\n", v);
-			char *tok, *key;
-			tok = strtok(v, ",");
-			while(tok != NULL){
-				key = strchr(tok, ':');
-				if(key == NULL) {
-					logmsg(warn, "Malformed id3mapentry, "
-						"no ':' found\n");
-					continue;
-				} else {
-					key++[0] = '\0';
-					id3map_add(trim(tok), trim(key));
-				}
-				tok = strtok(NULL, ",");
-			}
+			logmsg(debug, "Parsing id3map entr{y,ies}\n", v);
+			id3map_parse_conf(v);
 #endif
+		} else if (strcmp("exclude", k) == 0){
+			logmsg(debug, "Parsing exclude pattern\n", v);
+			exclude_add(safe_strdup(v));
 		} else {
 			logmsg(warn, "Unknown config line: %s\n", k);
 		}
@@ -190,91 +185,12 @@ ENTRY(bool, force_reread, NOT_FREE, false);
 ENTRY(bool, dont_update, NOT_FREE, false);
 ENTRY(bool, fix_filesystem, NOT_FREE, false);
 
-void id3map_free();
 void free_config()
 {
 	safe_free(3, get_database(), get_libraryroot(), get_config());
+	exclude_free();
+
 #ifdef USE_MP3
 	id3map_free();
 #endif
 }
-
-#ifdef USE_MP3
-struct id3map {
-	char id[5];
-	char *key;
-	struct id3map *next;
-};
-
-struct id3map *head = NULL;
-
-void id3map_add(char *id, char *key)
-{
-	struct id3map *c = head, *p = NULL;
-	if(strlen(id) > 5){
-		logmsg(warn, "id3map, id too long\n");
-		return;
-	}
-	while(c != NULL){
-		//Duplicate key
-		if(strcmp(c->id, id) == 0){
-			free(c->key);
-			c->key = safe_strdup(key);
-			return;
-		}
-		p = c;
-		c = c->next;
-	}
-	if(p == NULL){
-		head = safe_malloc(sizeof(struct id3map));
-		c = head;
-	} else {
-		p->next = safe_malloc(sizeof(struct id3map));
-		c = p->next;
-	}
-	strncpy(c->id, id, 5);
-	c->id[4] = '\0';
-	c->key = safe_strdup(key);
-	c->next = NULL;
-}
-
-bool id3map_del(char *id)
-{
-	struct id3map *c = head, *p = NULL;
-	while(c != NULL){
-		if(strcmp(c->id, id) == 0){
-			if(c == head)
-				head = c->next;
-			else
-				p->next = c->next;
-			return true;
-
-		}
-		p = c;
-		c = c->next;
-	}
-	return false;
-}
-
-char *id3map_get(char *id)
-{
-	struct id3map *c = head;
-	while(c != NULL){
-		if(strcmp(id, c->id) == 0)
-			return c->key;
-		c = c->next;
-	}
-	return id;
-}
-
-void id3map_free()
-{
-	struct id3map *c;
-	while(head != NULL){
-		c = head->next;
-		safe_free(2, head->key, head);
-		head = c;
-	}
-	head = NULL;
-}
-#endif
