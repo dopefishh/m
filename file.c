@@ -11,9 +11,6 @@
 #ifdef USE_OPUS
 #include "file_opus.h"
 #endif
-#ifdef USE_MP3
-#include "file_mp3.h"
-#endif
 
 #include "db.h"
 #include "util.h"
@@ -33,9 +30,6 @@ struct fmap fmapping[] = {
 #endif
 #ifdef USE_OPUS
 	{".opus", &process_opus},
-#endif
-#ifdef USE_MP3
-	{".mp3", &process_mp3},
 #endif
 	{0, 0}
 };
