@@ -1,7 +1,9 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
 #include <string.h>
 
+#include "config.h"
 #include "util.h"
 #include "parse.h"
 #include "log.h"
@@ -128,24 +130,51 @@ void parse_config()
 	}
 
 	FILE *f = safe_fopen(get_config(), "r");
-	char *l = NULL, *k, *v;
+	char *l = NULL, *k, *v, *t;
 	while(!feof(f)){
 		free(l);
 		l = get_line(f);
-		if((v = strchr(l, '#')) != NULL)
-			v[0] = '\0';
-		if((v = strchr(l, '=')) == NULL){
-			if(strlen(l) > 0)
-				logmsg(warn, "Can't parse '%s' in config\n", l);
+
+		//Check for comment
+		t = strchr(l, '#');
+		if(t != NULL)
+			t[0] = '\0';
+
+		if(strlen(l) == 0)
+			continue;
+
+		v = strchr(l, '=');
+		if(v == NULL){
+			logmsg(warn, "Malformed config line, no '=' found\n");
+			logmsg(warn, "'%s'", l);
 			continue;
 		}
 
+		v[0] = '\0';
 		k = trim(l);
 		v = trim(++v);
 
 		if (strcmp("database", k) == 0){
 			logmsg(debug, "Set database to: %s\n", v);
-			set_database(v);
+			set_database(resolve_tilde(v));
+#ifdef USE_MP3
+		} else if (strcmp("id3mapping", k) == 0){
+			logmsg(debug, "Parsing id3map\n", v);
+			char *tok, *key;
+			tok = strtok(v, ",");
+			while(tok != NULL){
+				key = strchr(tok, ':');
+				if(key == NULL) {
+					logmsg(warn, "Malformed id3mapentry, "
+						"no ':' found\n");
+					continue;
+				} else {
+					key[0] = '\0';
+					id3map_add(trim(tok), trim(++key));
+				}
+				tok = strtok(NULL, ",");
+			}
+#endif
 		} else {
 			logmsg(warn, "Unknown config line: %s\n", k);
 		}
@@ -161,3 +190,92 @@ ENTRY(char *, libraryroot, FREE, NULL);
 ENTRY(bool, force_reread, NOT_FREE, false);
 ENTRY(bool, dont_update, NOT_FREE, false);
 ENTRY(bool, fix_filesystem, NOT_FREE, false);
+
+void id3map_free();
+void free_config()
+{
+	safe_free(3, get_database(), get_libraryroot(), get_config());
+#ifdef USE_MP3
+	id3map_free();
+#endif
+}
+
+#ifdef USE_MP3
+struct id3map {
+	char id[5];
+	char *key;
+	struct id3map *next;
+};
+
+struct id3map *head = NULL;
+
+void id3map_add(char *id, char *key)
+{
+	struct id3map *c = head, *p = NULL;
+	if(strlen(id) > 5){
+		logmsg(warn, "id3map, id too long\n");
+		return;
+	}
+	while(c != NULL){
+		//Duplicate key
+		if(strcmp(c->id, id) == 0){
+			free(c->key);
+			c->key = safe_strdup(key);
+			return;
+		}
+		p = c;
+		c = c->next;
+	}
+	if(p == NULL){
+		head = safe_malloc(sizeof(struct id3map));
+		c = head;
+	} else {
+		p->next = safe_malloc(sizeof(struct id3map));
+		c = p->next;
+	}
+	strncpy(c->id, id, 5);
+	c->id[4] = '\0';
+	c->key = safe_strdup(key);
+	c->next = NULL;
+}
+
+bool id3map_del(char *id)
+{
+	struct id3map *c = head, *p = NULL;
+	while(c != NULL){
+		if(strcmp(c->id, id) == 0){
+			if(c == head)
+				head = c->next;
+			else
+				p->next = c->next;
+			return true;
+
+		}
+		p = c;
+		c = c->next;
+	}
+	return false;
+}
+
+char *id3map_get(char *id)
+{
+	struct id3map *c = head;
+	while(c != NULL){
+		if(strcmp(id, c->id) == 0)
+			return c->key;
+		c = c->next;
+	}
+	return id;
+}
+
+void id3map_free()
+{
+	struct id3map *c;
+	while(head != NULL){
+		c = head->next;
+		safe_free(2, head->key, head);
+		head = c;
+	}
+	head = NULL;
+}
+#endif

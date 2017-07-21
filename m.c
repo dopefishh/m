@@ -41,8 +41,6 @@ int main(int argc, char **argv)
 
 	//Free up pointers
 	free_db(db);
-	free(get_database());
-	free(get_config());
-	free(get_libraryroot());
+	free_config();
 	return EXIT_SUCCESS;
 }

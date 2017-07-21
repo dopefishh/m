@@ -68,4 +68,5 @@ distclean: clean
 	$(RM) $(PROGRAM)-$(VERSION).tar.gz
 
 clean:
+	$(RM) *.o $(PROGRAM)
 	$(RM) $(OBJS) $(PROGRAM) $(PROGRAM).1.gz

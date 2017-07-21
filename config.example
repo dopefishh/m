@@ -1,0 +1,53 @@
+# Database file location
+database = ~/.local/share/m/db
+
+# ID3 mapping, only applicable if mp3 support is enabled
+# This is a comma separated list containing key:value pairs.
+# This mapping below is the default mapping. Duplicates automaticall overwrite
+# the previous value.
+id3mapping = TALB:ALBUM,\
+	TSOA:ALBUMSORT,\
+	XSOA:ALBUMSORT,\
+	TSST:DISCSUBTITLE,\
+	TIT1:GROUPING,\
+	TIT2:TITLE,\
+	TSOT:TITLESORT,\
+	XSOT:TITLESORT,\
+	TIT3:SUBTITLE,\
+	TPE2:ALBUMARTIST,\
+	TSO2:ALBUMARTISTSORT,\
+	TPE1:ARTIST,\
+	TSOP:ARTISTSORT,\
+	XSOP:ARTISTSORT,\
+	TEXT:AUTHOR,\
+	TCOM:COMPOSER,\
+	TPE3:CONDUCTOR,\
+	TPUB:PUBLISHER,\
+	TPE4:REMIXER,\
+	TPOS:DISCNUMBER,\
+	TRCK:TRACKNUMBER,\
+	POPM:RATING,\
+	TYER:DATE,\
+	TDRC:DATE,\
+	TDOR:ORIGINALDATE,\
+	TSRC:ISRC,\
+	TCMP:COMPILATION,\
+	TENC:ENCODED-BY,\
+	TSSE:ENCODER,\
+	TMED:MEDIA,\
+	TCON:GENRE,\
+	TMOO:MOOD,\
+	TBPM:BPM,\
+	COMM:COMMENT,\
+	TCOP:COPYRIGHT,\
+	TLAN:LANGUAGE,\
+	WCOP:LICENCE,\
+	USLT:LYRICS
+
+#	IPLS:arranger,\
+#	IPLS:engineer,\
+#	IPLS:DJ-mix,\
+#	IPLS:mix,\
+#	IPLS:producer,\
+#
+#	TEXT:LYRICIST
