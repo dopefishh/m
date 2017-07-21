@@ -15,7 +15,7 @@ bool process_ogg(char *p, struct db_file *f)
 	file_tag_init(f, c->comments);
 
 	for(int i = 0; i<c->comments; i++)
-		if(file_tag_split_eq((char *)c->user_comments[i],
+		if(!file_tag_split_eq((char *)c->user_comments[i],
 				&f->tags->keys[i], &f->tags->values[i]))
 			f->tags->ntags--;
 

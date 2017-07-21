@@ -3,7 +3,6 @@ DESTDIR?=
 INSTALL_PROGRAM?=install -D
 INSTALL_DATA?=install -D
 
-
 PREFIX?=/usr/local
 EXEC_PREFIX?=$(PREFIX)
 BINDIR?=$(PREFIX)/bin

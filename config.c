@@ -149,9 +149,9 @@ void parse_config()
 			continue;
 		}
 
-		v[0] = '\0';
+		v++[0] = '\0';
 		k = trim(l);
-		v = trim(++v);
+		v = trim(v);
 
 		if (strcmp("database", k) == 0){
 			logmsg(debug, "Set database to: %s\n", v);
@@ -168,8 +168,8 @@ void parse_config()
 						"no ':' found\n");
 					continue;
 				} else {
-					key[0] = '\0';
-					id3map_add(trim(tok), trim(++key));
+					key++[0] = '\0';
+					id3map_add(trim(tok), trim(key));
 				}
 				tok = strtok(NULL, ",");
 			}
