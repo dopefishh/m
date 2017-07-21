@@ -20,7 +20,8 @@ ENTRYH(bool, fix_filesystem);
 
 #ifdef USE_MP3
 ENTRYH(char *, id3mapping);
-char *id3map_get(char *id);
+void id3map_add(char *, char *);
+char *id3map_get(char *);
 #endif
 
 #endif

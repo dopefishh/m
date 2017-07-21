@@ -107,6 +107,7 @@ void process_frame(struct id3_frame *fr, char **ks, char **vs, uint32_t *ti)
 	if(key == NULL){
 		//Lookup key
 		key = safe_strdup(id3map_get(fr->id));
+		logmsg(debug, "Found lookup from id3map: %s\n", key);
 	}
 	for(uint32_t i = oldti; i<*ti; i++){
 		ks[i] = safe_strdup(key);
