@@ -35,4 +35,4 @@ $(PROGRAM): $(HEADERS) $(OBJS)
 	$(LINK.c) $(LDLIBS) $^ $(OUTPUT_OPTION)
 
 clean:
-	$(RM) $(OBJS) $(PROGRAM)
+	$(RM) *.o $(PROGRAM)

@@ -2,6 +2,7 @@
 
 #include <id3tag.h>
 
+#include "config.h"
 #include "file.h"
 #include "util.h"
 #include "db.h"
@@ -105,7 +106,7 @@ void process_frame(struct id3_frame *fr, char **ks, char **vs, uint32_t *ti)
 	//If not a user tag, we look it up
 	if(key == NULL){
 		//Lookup key
-		key = safe_strdup("lookup");
+		key = safe_strdup(id3map_get(fr->id));
 	}
 	for(uint32_t i = oldti; i<*ti; i++){
 		ks[i] = safe_strdup(key);

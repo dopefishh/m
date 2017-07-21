@@ -161,3 +161,83 @@ ENTRY(char *, libraryroot, FREE, NULL);
 ENTRY(bool, force_reread, NOT_FREE, false);
 ENTRY(bool, dont_update, NOT_FREE, false);
 ENTRY(bool, fix_filesystem, NOT_FREE, false);
+
+void id3map_free();
+void free_config()
+{
+	safe_free(3, get_database(), get_libraryroot(), get_config());
+#ifdef USE_MP3
+	id3map_free();
+#endif
+}
+
+#ifdef USE_MP3
+struct id3map {
+	char id[5];
+	char *key;
+	struct id3map *next;
+};
+
+struct id3map *head = NULL;
+
+bool id3map_add(char *id, char *key)
+{
+	struct id3map *c = head, *p = NULL;
+	while(c != NULL){
+		//Duplicate key
+		if(strcmp(c->id, id) == 0)
+			return false;
+		p = c;
+		c = c->next;
+	}
+	if(p == NULL)
+		c = (head = safe_malloc(sizeof(struct id3map)));
+	else
+		c = (c->next = safe_malloc(sizeof(struct id3map)));
+	strncpy(c->id, id, 5);
+	c->id[4] = '\0';
+	c->key = safe_strdup(key);
+	return true;
+}
+
+bool id3map_del(char *id)
+{
+	struct id3map *c = head, *p = NULL;
+	while(c != NULL){
+		if(strcmp(c->id, id) == 0){
+			if(c == head)
+				head = c->next;
+			else
+				p->next = c->next;
+			return true;
+
+		}
+		p = c;
+		c = c->next;
+	}
+	return false;
+}
+
+char *id3map_get(char *id)
+{
+	struct id3map *c = head;
+	while(c != NULL){
+		if(strcmp(id, c->id) == 0)
+			return c->key;
+		c = c->next;
+	}
+	return id;
+}
+
+void id3map_free()
+{
+	struct id3map *c = head;
+	while(c != NULL){
+		head = c->next;
+		free(c->key);
+		free(c);
+		c = head->next;
+	}
+	head = NULL;
+}
+#endif
