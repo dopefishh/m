@@ -14,3 +14,9 @@ tags are translated to their according vorbiscomments standard.
 - `libvorbis` (for ogg support).
 - `libopusfile` (for opus support).
 - `libid3tag` (for mp3 support).
+
+## Compilation
+- Specific settings for enabling or disabling formats can be controllen in
+  `conf.mk`.
+- Build by running `make`
+- Install by running `make install` (not implemented yet)

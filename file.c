@@ -1,7 +1,5 @@
 #include <string.h>
 
-#include "cfg.h"
-
 #ifdef USE_FLAC
 #include "file_flac.h"
 #endif
