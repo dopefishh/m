@@ -41,19 +41,24 @@ void write_string(FILE *f, char *s)
 char *get_line(FILE *f)
 {
 	size_t total = 16, read = 0;
-	char *b = NULL;
+	char *b = safe_malloc(total);
 	while(true){
-		b = safe_realloc(b, total*=2);
+		if(total > 1024*1024*1024)
+			die("Too big of a line\n");
+
+		if(read >= total - 1)
+			b = safe_realloc(b, total*=2);
+
 		safe_fgets(b+read, total-read, f);
 		read = strlen(b);
-		if(feof(f)){
+
+		if(feof(f))
 			break;
-		}
+
 		if(b[read-1] == '\n'){
 			if(read > 1 && b[read-2] == '\\'){
-				b[read-1] = '\0';
-				b[read-2] = '\0';
-				read -= 2;
+				b[--read] = '\0';
+				b[--read] = '\0';
 			} else {
 				b[read-1] = '\0';
 				break;

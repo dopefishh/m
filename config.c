@@ -140,9 +140,13 @@ void parse_config()
 		if(t != NULL)
 			t[0] = '\0';
 
+		if(strlen(l) == 0)
+			continue;
+
 		v = strchr(l, '=');
 		if(v == NULL){
 			logmsg(warn, "Malformed config line, no '=' found\n");
+			logmsg(warn, "'%s'", l);
 			continue;
 		}
 
