@@ -38,6 +38,28 @@ uint32_t process_ntags(struct id3_tag *t)
 	return count;
 }
 
+char *latin1_to_utf8(unsigned char *l)
+{
+	uint32_t len = 0;
+	for(uint32_t i = 0; i<strlen((char *)l); i++){
+		len++;
+		if(l[i] >= 0x80)
+			len++;
+	}
+	char *r = safe_malloc(len+1);
+	uint32_t j = 0;
+	for(uint32_t i = 0; i<len; i++){
+		if(l[i] < 0x80){
+			r[j++] = l[i];
+		} else {
+			r[j++] = 0xc0 | (l[i] & 0xc0) >> 6;
+			r[j++] = 0x80 | (l[i] & 0x3f);
+		}
+	}
+	r[len] = '\0';
+	return r;
+}
+
 void process_frame(struct id3_frame *fr, char **ks, char **vs, uint32_t *ti)
 {
 	uint32_t oldti = *ti;
@@ -58,17 +80,16 @@ void process_frame(struct id3_frame *fr, char **ks, char **vs, uint32_t *ti)
 		case ID3_FIELD_TYPE_LATIN1:
 		case ID3_FIELD_TYPE_LATIN1FULL:
 			if(st == 1 && key == NULL)
-				key = safe_strdup((char *)f.latin1.ptr);
+				key = latin1_to_utf8(f.latin1.ptr);
 			else
-				vs[(*ti)++] = safe_strdup((char *)f.latin1.ptr);
+				vs[(*ti)++] = latin1_to_utf8(f.latin1.ptr);
 			break;
 		case ID3_FIELD_TYPE_LATIN1LIST:
 			if(st == 1)
-				key = safe_strdup(
-					(char *)f.latin1list.strings[0]);
+				key = latin1_to_utf8(f.latin1list.strings[0]);
 			for(unsigned int j = 0; j<f.latin1list.nstrings; j++)
-				vs[(*ti)++] = safe_strdup(
-					(char *)f.latin1list.strings[j]);
+				vs[(*ti)++] = latin1_to_utf8(
+					f.latin1list.strings[j]);
 			break;
 		case ID3_FIELD_TYPE_STRING:
 		case ID3_FIELD_TYPE_STRINGFULL:
