@@ -5,6 +5,8 @@
 #include "db.h"
 #include "log.h"
 
+#define CHUNKSIZE 128
+
 uint64_t parse_int64(FILE *f)
 {
 	uint64_t b;
@@ -40,17 +42,17 @@ void write_string(FILE *f, char *s)
 
 char *get_line(FILE *f)
 {
-	size_t total = 16, read = 0;
+	size_t total = CHUNKSIZE, read = 0;
 	char *b = safe_malloc(total);
 	while(true){
 		if(total > 1024*1024*1024)
 			die("Too big of a line\n");
 
 		if(read >= total - 1)
-			b = safe_realloc(b, total*=2);
+			b = safe_realloc(b, total+=CHUNKSIZE);
 
 		safe_fgets(b+read, total-read, f);
-		read = strlen(b);
+		read += strlen(read+b);
 
 		if(feof(f))
 			break;
