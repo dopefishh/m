@@ -13,3 +13,4 @@ tags are translated to their according vorbiscomments standard.
 - `libflac` (for flac support).
 - `libvorbis` (for ogg support).
 - `libopusfile` (for opus support).
+- `libid3tag` (for mp3 support).
