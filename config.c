@@ -146,7 +146,6 @@ void parse_config()
 		v = strchr(l, '=');
 		if(v == NULL){
 			logmsg(warn, "Malformed config line, no '=' found\n");
-			logmsg(warn, "'%s'", l);
 			continue;
 		}
 
