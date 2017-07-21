@@ -1,3 +1,5 @@
 *.o
 m
 testdir
+m.1.gz
+m-*.tar.gz
