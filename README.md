@@ -26,4 +26,8 @@ tags are translated to their according vorbiscomments standard.
 todo
 
 ### Config file
-todo
+The config is searched for according to the `XDG` spec. Thus in
+`~/.config/m/config`. It can also be specified with the `-c` flag.
+
+For information about the format and the possible options, refer to the
+`config.example` file.

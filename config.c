@@ -214,8 +214,11 @@ void id3map_add(char *id, char *key)
 	}
 	while(c != NULL){
 		//Duplicate key
-		if(strcmp(c->id, id) == 0)
+		if(strcmp(c->id, id) == 0){
+			free(c->key);
+			c->key = safe_strdup(key);
 			return;
+		}
 		p = c;
 		c = c->next;
 	}
