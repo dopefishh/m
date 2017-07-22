@@ -44,6 +44,7 @@ char *get_line(FILE *f)
 {
 	size_t total = CHUNKSIZE, read = 0;
 	char *b = safe_malloc(total);
+	b[0] = '\0';
 	while(true){
 		if(total > 1024*1024*1024)
 			die("Too big of a line\n");
@@ -52,19 +53,17 @@ char *get_line(FILE *f)
 			b = safe_realloc(b, total+=CHUNKSIZE);
 
 		safe_fgets(b+read, total-read, f);
-		read += strlen(read+b);
+		read += strlen(b+read);
 
 		if(feof(f))
 			break;
 
 		if(b[read-1] == '\n'){
-			if(read > 1 && b[read-2] == '\\'){
+			b[--read] = '\0';
+			if(read > 0 && b[read-1] == '\\')
 				b[--read] = '\0';
-				b[--read] = '\0';
-			} else {
-				b[read-1] = '\0';
+			else
 				break;
-			}
 		}
 	}
 	return b;
