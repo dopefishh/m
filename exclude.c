@@ -9,7 +9,7 @@ static struct listitem *head = NULL;
 
 void exclude_add(char *pat)
 {
-	head = list_add(head, (void *)pat);
+	head = list_prepend(head, (void *)pat);
 }
 
 void exclude_free()

@@ -9,7 +9,8 @@ struct listitem {
 	struct listitem *next;
 };
 
-struct listitem *list_add(struct listitem *, void *);
+struct listitem *list_prepend(struct listitem *, void *);
+struct listitem *list_append(struct listitem *, void *);
 
 void *list_find(struct listitem *, bool(*)(void *), uint32_t *);
 

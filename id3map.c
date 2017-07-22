@@ -40,7 +40,7 @@ void id3map_add(char *id, char *key)
 	struct id3map *r = safe_malloc(sizeof(struct id3map));
 	strncpy(r->id, id, 5);
 	r->key = safe_strdup(key);
-	head = list_add(head, (void *)r);
+	head = list_prepend(head, (void *)r);
 }
 
 
