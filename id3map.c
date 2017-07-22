@@ -37,17 +37,17 @@ void id3map_add(char *id, char *key)
 	head = list_add(head, (void *)r);
 }
 
-bool id3map_equal(void *a, void *b)
+void *equalstr;
+bool id3map_equal(void *a)
 {
-	return strcmp(((struct id3map *)a)->id, ((struct id3map *)b)->id) == 0;
+	return strcmp(((struct id3map *)a)->id, equalstr) == 0;
 }
 
 char *id3map_get(char *id)
 {
 	logmsg(debug, "Getting id3map entry for %s\n", id);
-	uint32_t rr;
-	struct id3map *r = (struct id3map *)list_find(
-		head, (void *)id, &id3map_equal, &rr); //TODO maybe this should be NULL
+	equalstr = id;
+	struct id3map *r = list_find(head, &id3map_equal, NULL);
 	return r == NULL ? id : r->key;
 }
 

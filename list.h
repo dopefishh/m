@@ -11,7 +11,9 @@ struct listitem {
 
 struct listitem *list_add(struct listitem *, void *);
 
-void *list_find(struct listitem *, void *, bool(*)(void *, void *), uint32_t *);
+void *list_find(struct listitem *, bool(*)(void *), uint32_t *);
+
+struct listitem *list_delete(struct listitem *, uint32_t, void **);
 
 void list_free(struct listitem *, void(*)(void *));
 

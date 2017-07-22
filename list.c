@@ -22,21 +22,25 @@ struct listitem *list_add(struct listitem *head, void *value)
 	return head;
 }
 
-void *list_find(struct listitem *head, void *ndl, bool(*pred)(void *, void *), uint32_t *index)
+void *list_find(struct listitem *head, bool(*pred)(void *), uint32_t *index)
 {
 	struct listitem *r = head;
-	*index = 0;
+	uint32_t in = 0;
 	while(r != NULL){
-		if(pred(r->value, ndl))
+		if(pred(r->value)){
+			if(index != NULL)
+				*index = in;
 			return r->value;
+		}
 		r = r->next;
-		(*index)++;
+		in++;
 	}
-	*index = -1;
+	if(index != NULL)
+		*index = -1;
 	return NULL;
 }
 
-struct listitem *list_delete(struct listitem *head, uint32_t index)
+struct listitem *list_delete(struct listitem *head, uint32_t index, void **item)
 {
 	struct listitem *r = head, *p = NULL;
 	uint32_t in = 0;
@@ -45,9 +49,16 @@ struct listitem *list_delete(struct listitem *head, uint32_t index)
 		r = r->next;
 		in++;
 	}
-	(void)p;
-	//TODO delete, and allow the user to free it
-	return NULL;
+	if(head == NULL){
+		return NULL;
+	}
+	*item = r->value;
+	if(r == head)
+		head = r->next;
+	else
+		p->next = r->next;
+	free(r);
+	return head;
 }
 
 void list_free(struct listitem *head, void(*myfree)(void *))
