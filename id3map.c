@@ -21,7 +21,7 @@ void id3map_add_from_string(char *id)
 		return;
 	}
 	key++[0] = '\0';
-	id3map_add(safe_strdup(trim(id)), safe_strdup(trim(key)));
+	id3map_add(trim(id), trim(key));
 }
 
 void *equalstr;
@@ -36,16 +36,6 @@ void id3map_add(char *id, char *key)
 		logmsg(warn, "id3map, id too long\n");
 		return;
 	}
-	//Find dups and remove
-	equalstr = id;
-	uint32_t toremove;
-	void *remove;
-	head = list_find(head, &id3map_equal, &toremove);
-	head = list_delete(head, toremove, &remove);
-	if(remove != NULL){
-		;//safe_free(2, remove, ((struct id3map *)remove)->key);
-	}
-
 	//Add
 	struct id3map *r = safe_malloc(sizeof(struct id3map));
 	strncpy(r->id, id, 5);
