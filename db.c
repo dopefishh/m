@@ -20,6 +20,19 @@ struct intlist {
 	struct intlist *next;
 };
 
+//Comparison functions
+int db_file_cmp(const void *a1, const void *a2)
+{
+	return strcmp(((struct db_file *) a1)->path,
+		((struct db_file *) a2)->path);
+}
+
+int db_entry_cmp(const void *a1, const void *a2)
+{
+	return strcmp(((struct db_entry *) a1)->dir,
+		((struct db_entry *) a2)->dir);
+}
+
 struct db *init_db()
 {
 	logmsg(debug, "Initializing db\n");
@@ -205,6 +218,10 @@ void recurse(char *rp, dev_t dev, struct db_entry *entry)
 		free(pp);
 	}
 	safe_closedir(d);
+
+	//Sort collections
+	qsort(entry->files, entry->nfile, sizeof(struct db_file), &db_file_cmp);
+	qsort(entry->dirs, entry->ndir, sizeof(struct db_entry), &db_entry_cmp);
 
 	//Free stuff up
 	for(uint64_t i = 0; i<oldnd; i++)

@@ -38,6 +38,10 @@ struct db *get_db(char *path);
 void save_db(struct db *db, char *path);
 void update_db(struct db *db);
 
+//Comparison
+int db_file_cmp(const void *a1, const void *a2);
+int db_entry_cmp(const void *a1, const void *a2);
+
 void print_db(struct db *db, FILE *f);
 void free_db(struct db *db);
 
