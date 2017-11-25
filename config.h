@@ -7,6 +7,20 @@
 	void set_##name(type n);\
 	type get_##name()
 
+enum command {c_print,c_update,c_search};
+
+struct mcommand {
+	enum command command;
+	union {
+		struct {
+			char *q;
+		} search_opts;
+		struct {
+			bool force_update;
+		} update_opts;
+	} fields;
+};
+
 void parse_config();
 void parse_cli(int argc, char **argv);
 void free_config();
@@ -14,6 +28,7 @@ void free_config();
 ENTRYH(char *, database);
 ENTRYH(char *, config);
 ENTRYH(char *, libraryroot);
+ENTRYH(struct mcommand, command);
 ENTRYH(bool, force_reread);
 ENTRYH(bool, dont_update);
 ENTRYH(bool, fix_filesystem);

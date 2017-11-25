@@ -28,15 +28,22 @@ int main(int argc, char **argv)
 
 	//Load database and possibly update
 	struct db *db = get_db(get_database());
-	if(!get_dont_update()){
-		logmsg(info, "Updating db\n");
-		update_db(db);
-	} else {
-		logmsg(info, "Not updating db\n");
+	switch (get_command().command)
+	{
+		case c_print:
+			logmsg(info, "Printing db\n");
+			print_db(db, stdout);
+			break;
+		case c_update:
+			logmsg(info, "Updating db\n");
+			update_db(db);
+			break;
+		default:
+			logmsg(warn, "Unknown command\n");
+			break;
 	}
 
 	//Save database
-	print_db(db, stdout);
 	save_db(db, get_database());
 
 	//Free up pointers

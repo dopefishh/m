@@ -25,12 +25,19 @@
 		return name;\
 	}
 
+ENTRY(char *, database, FREE, NULL)
+ENTRY(char *, config, FREE, NULL)
+ENTRY(char *, libraryroot, FREE, NULL)
+ENTRY(bool, force_reread, NOT_FREE, false)
+ENTRY(bool, dont_update, NOT_FREE, false)
+ENTRY(bool, fix_filesystem, NOT_FREE, false)
+ENTRY(struct mcommand, command, NOT_FREE, {.command=c_print})
 
 static struct option lopts[] =
 {
 	{"verbose",     no_argument,       0, 'v'},
 	{"silent",      no_argument,       0, 's'},
-	{"help",        no_argument,       0, 'h'},
+	{"help",        optional_argument, 0, 'h'},
 	{"version",     no_argument,       0, 'V'},
 	{"config",      required_argument, 0, 'c'},
 	{"libraryroot", no_argument,       0, 'r'},
@@ -49,7 +56,7 @@ static const char *optstring = \
 	"c:"   \
 	"d:"   \
 	"f"    \
-	"h"    \
+	"h::"  \
 	"l:"   \
 	"n"    \
 	"r:"   \
@@ -65,32 +72,51 @@ void version(FILE *out)
 	safe_fputs("``m'' Version 0.1\n", out);
 }
 
-void usage(FILE *out, char *arg0)
+void usage(char *cmd, FILE *out, char *arg0)
 {
 	version(out);
-	fprintf(out,
-		"Usage: %s [OPTS]\n"
-		"\n"
-		"Options:\n"
-		"  -v,--verbose            Increase verbosity\n"
-		"  -s,--silent             Decrease verbosity\n"
-		"  -h,--help               Print this help\n"
-		"  --version               Print the version\n"
-		"\n"
-		"  -c,--config      FILE   Use the specified config\n"
-		"  -d,--db          FILE   Use the specified database\n"
-		"  -f,--force              Force reread the entire database\n"
-		"  -n,--dontupdate         Don't update the database\n"
-		"  -l,--log         FILE   Log to FILE instead of stdout\n"
-		"  -r,--libraryroot FILE   User FILE as the database root\n\n"
-		"  -x,--filesystem         Stay within one filesystem\n"
-		"  -e,--exclude     GLOB   Add GLOB to the exclusion list\n"
+	if(cmd == NULL){
+		fprintf(out,
+			"Usage: %s [OPTS] [COMMAND [COMMANDOPTS]]\n"
+			"\n"
+			"Options:\n"
+			"  -v,--verbose            Increase verbosity\n"
+			"  -s,--silent             Decrease verbosity\n"
+			"  -h,--help     [COMMAND] Print this help or the command specific\n"
+			"  -l,--log         FILE   Log to FILE instead of stdout\n"
+			"  --version               Print the version\n"
+			"\n"
+			"  -c,--config      FILE   Use the specified config\n"
+			"  -d,--db          FILE   Use the specified database\n"
+			"  -f,--force              Force reread the entire database\n"
+			"  -n,--dontupdate         Don't update the database\n"
+			"  -r,--libraryroot FILE   User FILE as the database root\n\n"
+			"  -x,--filesystem         Stay within one filesystem\n"
+			"  -e,--exclude     GLOB   Add GLOB to the exclusion list\n"
 #ifdef USE_MP3
-		"\n"
-		"MP3 specific options\n"
-		"  -3,--id3map    ID:KEY   Add ID:KEY to the id3map\n"
+			"\n"
+			"MP3 specific options\n"
+			"  -3,--id3map    ID:KEY   Add ID:KEY to the id3map\n"
 #endif
-		, arg0);
+			"\n"
+			"Commands (default: update)\n"
+			"  print                   Print the database\n"
+			"  update                  Update the database\n"
+			, arg0);
+	} else if (strcmp(cmd, "print") == 0) {
+		fprintf(out,
+			"Usage: %s [...] print [OPTS]\n"
+			"\n"
+			"Options:\n"
+			, arg0);
+	} else if (strcmp(cmd, "update") == 0) {
+		fprintf(out,
+			"Usage: %s [...] update [OPTS]\n"
+			"\n"
+			"Options:\n"
+			"  -f,--force              Force update the library\n"
+			, arg0);
+	}
 }
 
 void parse_cli(int argc, char **argv)
@@ -114,7 +140,8 @@ void parse_cli(int argc, char **argv)
 			set_force_reread(true);
 			break;
 		case 'h':
-			usage(stdout, argv[0]);
+			printf("optarg: %s\n", optarg);
+			usage(optarg, stdout, argv[0]);
 			exit(EXIT_SUCCESS);
 		case 'l':
 			set_logfile(resolve_tilde(optarg));
@@ -150,14 +177,21 @@ void parse_cli(int argc, char **argv)
 			break;
 #endif
 		default:
-			usage(stderr, argv[0]);
+			usage(NULL, stderr, argv[0]);
 			die("");
 		}
 	}
 
 	if (optind < argc) {
-		usage(stderr, argv[0]);
-		die("Positional arguments not allowed\n");
+		if (strcmp(argv[optind], "print") == 0) {
+			command.command = c_print;
+		} else if (strcmp(argv[optind], "update") == 0) {
+			command.command = c_update;
+		} else {
+			logmsg(warn, "Unknown command: %s\n", argv[optind]);
+			usage(NULL, stderr, argv[0]);
+			die("");
+		}
 	}
 }
 
@@ -221,13 +255,6 @@ void parse_config()
 
 	safe_fclose(f);
 }
-
-ENTRY(char *, database, FREE, NULL)
-ENTRY(char *, config, FREE, NULL)
-ENTRY(char *, libraryroot, FREE, NULL)
-ENTRY(bool, force_reread, NOT_FREE, false)
-ENTRY(bool, dont_update, NOT_FREE, false)
-ENTRY(bool, fix_filesystem, NOT_FREE, false)
 
 void free_config()
 {

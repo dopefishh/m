@@ -2,7 +2,7 @@
 database = ~/.local/share/m/db
 
 # Library root
-library = ~/music
+library = /mnt/data/music
 
 # Glob patterns of files/directories that should be excluded
 #exclude = *Giant*
