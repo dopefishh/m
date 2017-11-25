@@ -20,10 +20,11 @@
 	void set_##name(type n) {\
 		free(name)\
 		name = n;\
-	}; \
+	} \
 	type get_##name() {\
 		return name;\
 	}
+
 
 static struct option lopts[] =
 {
@@ -196,6 +197,9 @@ void parse_config()
 		if (strcmp("database", k) == 0){
 			logmsg(debug, "Set database to: %s\n", v);
 			set_database(resolve_tilde(v));
+		} else if (strcmp("library", k) == 0){
+			logmsg(debug, "Set libraryroot to: %s\n", v);
+			set_libraryroot(resolve_tilde(v));
 #ifdef USE_MP3
 		} else if (strcmp("id3mapping", k) == 0){
 			logmsg(debug, "Parsing id3map entr{y,ies}\n", v);
@@ -218,12 +222,12 @@ void parse_config()
 	safe_fclose(f);
 }
 
-ENTRY(char *, database, FREE, NULL);
-ENTRY(char *, config, FREE, NULL);
-ENTRY(char *, libraryroot, FREE, NULL);
-ENTRY(bool, force_reread, NOT_FREE, false);
-ENTRY(bool, dont_update, NOT_FREE, false);
-ENTRY(bool, fix_filesystem, NOT_FREE, false);
+ENTRY(char *, database, FREE, NULL)
+ENTRY(char *, config, FREE, NULL)
+ENTRY(char *, libraryroot, FREE, NULL)
+ENTRY(bool, force_reread, NOT_FREE, false)
+ENTRY(bool, dont_update, NOT_FREE, false)
+ENTRY(bool, fix_filesystem, NOT_FREE, false)
 
 void free_config()
 {

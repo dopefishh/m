@@ -219,7 +219,7 @@ void recurse(char *rp, dev_t dev, struct db_entry *entry)
 	}
 	safe_closedir(d);
 
-	//Sort collections
+	//Sort collections for quicker search
 	qsort(entry->files, entry->nfile, sizeof(struct db_file), &db_file_cmp);
 	qsort(entry->dirs, entry->ndir, sizeof(struct db_entry), &db_entry_cmp);
 

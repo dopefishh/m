@@ -1,12 +1,12 @@
 SHELL = /bin/sh
 include conf.mk
 
-CFLAGS?=-Wall -Wextra -Werror -g
+CFLAGS?=-Wall -Wpedantic -Wextra -Werror -g
 LDFLAGS?=
 
 VERSION:=0.1
 PROGRAM:=m
-OBJS:=file.o db.o m.o util.o xdg.o parse.o config.o log.o exclude.o list.o
+OBJS:=file.o db.o m.o util.o xdg.o parse.o config.o log.o exclude.o list.o search.o
 
 ifdef USE_FLAC
 CFLAGS+=-DUSE_FLAC $(shell pkg-config --cflags flac)
