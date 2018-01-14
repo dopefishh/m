@@ -99,6 +99,7 @@ void usage(char *cmd, FILE *out, char *arg0)
 			"Usage: %s [...] update [OPTS]\n"
 			"\n"
 			"Options:\n"
+			"  -h,--help               Show this help\n"
 			"  -f,--force              Force reread the entire database\n"
 			"  -x,--filesystem         Stay within one filesystem\n"
 			, arg0);
@@ -111,7 +112,7 @@ static struct option print_lopts[] =
 	{0, 0, 0, 0}
 };
 
-static const char *print_optstring = "+h:";
+static const char *print_optstring = "h";
 
 void parse_print_cli(int argc, char **argv)
 {
@@ -137,7 +138,7 @@ static struct option update_lopts[] =
 	{0, 0, 0, 0}
 };
 
-static const char *update_optstring = "+h:fx";
+static const char *update_optstring = "h:fx";
 
 void parse_update_cli(int argc, char **argv)
 {
@@ -163,6 +164,9 @@ void parse_update_cli(int argc, char **argv)
 
 void parse_cli(int argc, char **argv)
 {
+	for(int i = 0; i<argc; i++){
+		printf("cli[%i] = %s\n", i, argv[i]);
+	}
 	int oi = 0;
 	int c;
 	while((c = getopt_long(argc, argv, optstring, lopts, &oi)) != -1){
@@ -217,13 +221,16 @@ void parse_cli(int argc, char **argv)
 	}
 
 	if (optind < argc) {
+		argc -= optind;
+		argv += optind;
+		optind = 1;
 		logmsg(debug, "Positional arguments\n");
 		if (strcmp(argv[optind], "print") == 0) {
 			command.command = c_print;
-			parse_print_cli(optind, argv);
+			parse_print_cli(argc, argv);
 		} else if (strcmp(argv[optind], "update") == 0) {
 			command.command = c_update;
-			parse_update_cli(optind, argv);
+			parse_update_cli(argc, argv);
 		} else {
 			logmsg(warn, "Unknown command: %s\n", argv[optind]);
 			usage(NULL, stderr, argv[0]);
