@@ -14,12 +14,12 @@ int main(int argc, char **argv)
 	init_logging();
 
 	//Set defaults
-	set_config(get_config_path());
+	command.config = get_config_path();
 	char *d = get_data_dir();
-	set_database(get_file(d, "db"));
+	command.database = get_file(d, "db");
 	free(d);
 	d = resolve_tilde("~/Music");
-	set_libraryroot(safe_getenv("XDG_MUSIC_DIR", d));
+	command.libraryroot = safe_getenv("XDG_MUSIC_DIR", d);
 	free(d);
 
 	//Gather settings
@@ -27,8 +27,8 @@ int main(int argc, char **argv)
 	parse_config();
 
 	//Load database and possibly update
-	struct db *db = get_db(get_database());
-	switch (get_command().command)
+	struct db *db = get_db(command.database);
+	switch (command.command)
 	{
 		case c_print:
 			logmsg(info, "Printing db\n");
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 	}
 
 	//Save database
-	save_db(db, get_database());
+	save_db(db, command.database);
 
 	//Free up pointers
 	free_db(db);

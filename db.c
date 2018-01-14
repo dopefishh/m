@@ -39,7 +39,7 @@ struct db *init_db()
 	struct db *r = safe_malloc(sizeof(struct db));
 	r->last_modified = safe_time(&r->initialized);
 	r->version = M_DB_VERSION;
-	r->rootpath = safe_strdup(get_libraryroot());
+	r->rootpath = safe_strdup(command.libraryroot);
 	//Parse root
 	r->root = safe_calloc(sizeof(struct db_entry), 1);
 	r->root->dir = safe_strdup("/");
@@ -127,7 +127,7 @@ void recurse(char *rp, dev_t dev, struct db_entry *entry)
 			free(pp);
 			continue;
 		}
-		if(buf.st_dev != dev && get_fix_filesystem()){
+		if(buf.st_dev != dev && command.fields.update_opts.fix_filesystem){
 			logmsg(debug,
 				"Skipping %s, it is at a different fs\n", pp);
 			free(pp);
@@ -166,7 +166,7 @@ void recurse(char *rp, dev_t dev, struct db_entry *entry)
 			perror("stat");
 			continue;
 		}
-		if(buf.st_dev != dev && get_fix_filesystem()){
+		if(buf.st_dev != dev && command.fields.update_opts.fix_filesystem){
 			logmsg(info, "Skipping %s, it is at a different fs\n",
 				de->d_name);
 			continue;
@@ -233,19 +233,19 @@ void recurse(char *rp, dev_t dev, struct db_entry *entry)
 
 void update_db(struct db *db)
 {
-	logmsg(debug, "Updating db with root: %s\n", get_libraryroot());
+	logmsg(debug, "Updating db with root: %s\n", command.libraryroot);
 	struct stat buf;
-	if(stat(get_libraryroot(), &buf) == -1)
+	if(stat(command.libraryroot, &buf) == -1)
 		perrordie("stat");
 
-	if(strcmp(db->rootpath, get_libraryroot()) != 0){
+	if(strcmp(db->rootpath, command.libraryroot) != 0){
 		logmsg(warn, "This db has a different root. Aborting\n");
 		logmsg(warn, "dbroot: %s, libraryroot: %s\n",
-			db->rootpath, get_libraryroot());
+			db->rootpath, command.libraryroot);
 		return;
 	}
 
-	recurse(get_libraryroot(), buf.st_dev, db->root);
+	recurse(command.libraryroot, buf.st_dev, db->root);
 }
 
 struct db *get_db(char *path)
@@ -253,7 +253,7 @@ struct db *get_db(char *path)
 	logmsg(debug, "Db requested at: %s\n", path);
 	if(path_exists(path)){
 		logmsg(debug, "Path exists\n");
-		if(get_force_reread()){
+		if(command.fields.update_opts.force_update){
 			logmsg(debug, "Forcing a new db anyways\n");
 			return init_db();
 		}

@@ -13,25 +13,18 @@
 #include "id3map.h"
 #endif
 
-#define FREE(i) free(i);
-#define NOT_FREE(i)
-#define ENTRY(type, name, free, initial) \
-	type name = initial;\
-	void set_##name(type n) {\
-		free(name)\
-		name = n;\
-	} \
-	type get_##name() {\
-		return name;\
-	}
+#define ASSIGNFREE(a, v) {free(a); a = v;}
 
-ENTRY(char *, database, FREE, NULL)
-ENTRY(char *, config, FREE, NULL)
-ENTRY(char *, libraryroot, FREE, NULL)
-ENTRY(bool, force_reread, NOT_FREE, false)
-ENTRY(bool, dont_update, NOT_FREE, false)
-ENTRY(bool, fix_filesystem, NOT_FREE, false)
-ENTRY(struct mcommand, command, NOT_FREE, {.command=c_print})
+struct mcommand command =
+	{ .database    = NULL
+	, .config      = NULL
+	, .libraryroot = NULL
+	, .logfile     = NULL
+#ifdef USE_MP3
+	, .id3mapping  = NULL
+#endif
+	, .command     = c_print
+	};
 
 static struct option lopts[] =
 {
@@ -42,9 +35,6 @@ static struct option lopts[] =
 	{"config",      required_argument, 0, 'c'},
 	{"libraryroot", no_argument,       0, 'r'},
 	{"db",          required_argument, 0, 'd'},
-	{"force",       no_argument,       0, 'f'},
-	{"dontupdate",  no_argument,       0, 'n'},
-	{"filesystem",  no_argument,       0, 'x'},
 	{"exclude",     required_argument, 0, 'e'},
 #ifdef USE_MP3
 	{"id3map",      required_argument, 0, '3'},
@@ -53,17 +43,15 @@ static struct option lopts[] =
 };
 
 static const char *optstring = \
+	"+"    \
 	"c:"   \
 	"d:"   \
-	"f"    \
 	"h::"  \
 	"l:"   \
-	"n"    \
 	"r:"   \
 	"s"    \
 	"v"    \
 	"V"    \
-	"x"    \
 	"3:"   \
 	"e:";
 
@@ -88,10 +76,7 @@ void usage(char *cmd, FILE *out, char *arg0)
 			"\n"
 			"  -c,--config      FILE   Use the specified config\n"
 			"  -d,--db          FILE   Use the specified database\n"
-			"  -f,--force              Force reread the entire database\n"
-			"  -n,--dontupdate         Don't update the database\n"
 			"  -r,--libraryroot FILE   User FILE as the database root\n\n"
-			"  -x,--filesystem         Stay within one filesystem\n"
 			"  -e,--exclude     GLOB   Add GLOB to the exclusion list\n"
 #ifdef USE_MP3
 			"\n"
@@ -114,8 +99,65 @@ void usage(char *cmd, FILE *out, char *arg0)
 			"Usage: %s [...] update [OPTS]\n"
 			"\n"
 			"Options:\n"
-			"  -f,--force              Force update the library\n"
+			"  -f,--force              Force reread the entire database\n"
+			"  -x,--filesystem         Stay within one filesystem\n"
 			, arg0);
+	}
+}
+
+static struct option print_lopts[] =
+{
+	{"help",        no_argument, 0, 'h'},
+	{0, 0, 0, 0}
+};
+
+static const char *print_optstring = "+h:";
+
+void parse_print_cli(int argc, char **argv)
+{
+	int oi = 0;
+	int c;
+	while((c = getopt_long(argc, argv, print_optstring, print_lopts, &oi)) != -1){
+		switch (c) {
+		case 'h':
+			usage("print", stdout, argv[0]);
+			exit(EXIT_SUCCESS);
+		default:
+			usage(NULL, stderr, argv[0]);
+			die("");
+		}
+	}
+}
+
+static struct option update_lopts[] =
+{
+	{"force",       no_argument, 0, 'f'},
+	{"filesystem",  no_argument, 0, 'x'},
+	{"help",        no_argument, 0, 'h'},
+	{0, 0, 0, 0}
+};
+
+static const char *update_optstring = "+h:fx";
+
+void parse_update_cli(int argc, char **argv)
+{
+	int oi = 0;
+	int c;
+	while((c = getopt_long(argc, argv, update_optstring, update_lopts, &oi)) != -1){
+		switch (c) {
+		case 'f':
+			command.fields.update_opts.force_update = true;
+			break;
+		case 'x':
+			command.fields.update_opts.fix_filesystem = true;
+			break;
+		case 'h':
+			usage("print", stdout, argv[0]);
+			exit(EXIT_SUCCESS);
+		default:
+			usage(NULL, stderr, argv[0]);
+			die("");
+		}
 	}
 }
 
@@ -127,32 +169,28 @@ void parse_cli(int argc, char **argv)
 		switch (c) {
 		case 'c':
 			logmsg(debug, "Set config location: %s\n", optarg);
-			set_config(resolve_tilde(optarg));
+			ASSIGNFREE(command.config, resolve_tilde(optarg));
 			break;
 		case 'd':
 			logmsg(debug, "DB location: %s\n", optarg);
-			set_database(rtrimc(resolve_tilde(optarg), '/'));
+			free(command.database);
+			ASSIGNFREE(command.database,
+				rtrimc(resolve_tilde(optarg), '/'));
 			break;
 		case 'V':
 			version(stdout);
 			exit(EXIT_SUCCESS);
-		case 'f':
-			set_force_reread(true);
-			break;
 		case 'h':
 			printf("optarg: %s\n", optarg);
 			usage(optarg, stdout, argv[0]);
 			exit(EXIT_SUCCESS);
 		case 'l':
-			set_logfile(resolve_tilde(optarg));
+			ASSIGNFREE(command.logfile, resolve_tilde(optarg));
 			logmsg(debug, "Log output set to: %s\n", optarg);
-			break;
-		case 'n':
-			set_dont_update(true);
 			break;
 		case 'r':
 			logmsg(debug, "Library root set to %s\n", optarg);
-			set_libraryroot(resolve_tilde(optarg));
+			ASSIGNFREE(command.libraryroot, resolve_tilde(optarg));
 			break;
 		case 's':
 			decrease_loglevel();
@@ -161,10 +199,6 @@ void parse_cli(int argc, char **argv)
 		case 'v':
 			increase_loglevel();
 			logmsg(debug, "Increased loglevel\n");
-			break;
-		case 'x':
-			set_fix_filesystem(true);
-			logmsg(debug, "Fixed to one filesystem\n");
 			break;
 		case 'e':
 			exclude_add(safe_strdup(optarg));
@@ -183,28 +217,33 @@ void parse_cli(int argc, char **argv)
 	}
 
 	if (optind < argc) {
+		logmsg(debug, "Positional arguments\n");
 		if (strcmp(argv[optind], "print") == 0) {
 			command.command = c_print;
+			parse_print_cli(optind, argv);
 		} else if (strcmp(argv[optind], "update") == 0) {
 			command.command = c_update;
+			parse_update_cli(optind, argv);
 		} else {
 			logmsg(warn, "Unknown command: %s\n", argv[optind]);
 			usage(NULL, stderr, argv[0]);
 			die("");
 		}
+	} else {
+		logmsg(debug, "No positional arguments\n");
 	}
 }
 
 void parse_config()
 {
-	logmsg(debug, "Going to parse config at: %s\n", get_config());
-	if(!path_exists(get_config())){
+	logmsg(debug, "Going to parse config at: %s\n", command.config);
+	if(!path_exists(command.config)){
 		logmsg(info, "No config file found at: %s. Defaults used.\n",
-			get_config());
+			command.config);
 		return;
 	}
 
-	FILE *f = safe_fopen(get_config(), "r");
+	FILE *f = safe_fopen(command.config, "r");
 	char *l = NULL, *k, *v, *t;
 	while(!feof(f)){
 		free(l);
@@ -230,10 +269,12 @@ void parse_config()
 
 		if (strcmp("database", k) == 0){
 			logmsg(debug, "Set database to: %s\n", v);
-			set_database(resolve_tilde(v));
+			free(command.database);
+			command.database = resolve_tilde(v);
 		} else if (strcmp("library", k) == 0){
 			logmsg(debug, "Set libraryroot to: %s\n", v);
-			set_libraryroot(resolve_tilde(v));
+			free(command.libraryroot);
+			command.libraryroot = resolve_tilde(v);
 #ifdef USE_MP3
 		} else if (strcmp("id3mapping", k) == 0){
 			logmsg(debug, "Parsing id3map entr{y,ies}\n", v);
@@ -258,7 +299,7 @@ void parse_config()
 
 void free_config()
 {
-	safe_free(3, get_database(), get_libraryroot(), get_config());
+	safe_free(3, command.database, command.libraryroot, command.config);
 	exclude_free();
 
 #ifdef USE_MP3

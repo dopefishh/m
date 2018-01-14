@@ -10,6 +10,13 @@
 enum command {c_print,c_update,c_search};
 
 struct mcommand {
+	char *database;
+	char *config;
+	char *libraryroot;
+	char *logfile;
+#ifdef USE_MP3
+	char *id3mapping;
+#endif
 	enum command command;
 	union {
 		struct {
@@ -17,24 +24,16 @@ struct mcommand {
 		} search_opts;
 		struct {
 			bool force_update;
+			bool fix_filesystem;
 		} update_opts;
 	} fields;
-};
+} command;
 
 void parse_config();
 void parse_cli(int argc, char **argv);
 void free_config();
 
-ENTRYH(char *, database);
-ENTRYH(char *, config);
-ENTRYH(char *, libraryroot);
-ENTRYH(struct mcommand, command);
-ENTRYH(bool, force_reread);
-ENTRYH(bool, dont_update);
-ENTRYH(bool, fix_filesystem);
-
 #ifdef USE_MP3
-ENTRYH(char *, id3mapping);
 void id3map_add(char *, char *);
 char *id3map_get(char *);
 void id3map_free();
