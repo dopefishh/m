@@ -276,12 +276,10 @@ void parse_config()
 
 		if (strcmp("database", k) == 0){
 			logmsg(debug, "Set database to: %s\n", v);
-			free(command.database);
-			command.database = resolve_tilde(v);
+			ASSIGNFREE(command.database, resolve_tilde(v));
 		} else if (strcmp("library", k) == 0){
 			logmsg(debug, "Set libraryroot to: %s\n", v);
-			free(command.libraryroot);
-			command.libraryroot = resolve_tilde(v);
+			ASSIGNFREE(command.libraryroot, resolve_tilde(v));
 #ifdef USE_MP3
 		} else if (strcmp("id3mapping", k) == 0){
 			logmsg(debug, "Parsing id3map entr{y,ies}\n", v);

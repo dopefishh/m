@@ -20,12 +20,12 @@ struct mcommand {
 	enum command command;
 	union {
 		struct {
-			char *q;
-		} search_opts;
-		struct {
 			bool force_update;
 			bool fix_filesystem;
 		} update_opts;
+		struct {
+			char *q;
+		} search_opts;
 	} fields;
 } command;
 
