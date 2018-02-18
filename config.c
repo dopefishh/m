@@ -17,8 +17,6 @@
 #include "config/update.h"
 #include "config/print.h"
 
-#define ASSIGNFREE(a, v) {free(a); a = v;}
-
 struct mcommand command =
 	{ .database    = NULL
 	, .config      = NULL
@@ -117,7 +115,6 @@ void parse_cli(int argc, char **argv)
 			break;
 		case 'd':
 			logmsg(debug, "DB location: %s\n", optarg);
-			free(command.database);
 			ASSIGNFREE(command.database,
 				rtrimc(resolve_tilde(optarg), '/'));
 			break;

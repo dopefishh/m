@@ -6,8 +6,7 @@ LDFLAGS?=
 
 VERSION:=0.1
 PROGRAM:=m
-OBJS:=m.o\
-	$(patsubst %.h,%.o,\
+OBJS:=$(patsubst %.h,%.o,\
 		$(wildcard *.h) \
 		$(wildcard config/*.h)\
 	)

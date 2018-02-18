@@ -4,9 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#define ENTRYH(type, name) \
-	void set_##name(type n);\
-	type get_##name()
+#define ASSIGNFREE(a, v) {free(a); a = v;}
 
 enum command {c_print,c_update,c_search};
 
@@ -25,7 +23,8 @@ struct mcommand {
 			bool fix_filesystem;
 		} update_opts;
 		struct {
-			char *q;
+			char *query;
+			char *grouppattern;
 		} search_opts;
 	} fields;
 } command;
