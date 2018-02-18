@@ -2,6 +2,7 @@
 #define CONFIG_H
 
 #include <stdbool.h>
+#include <stdio.h>
 
 #define ENTRYH(type, name) \
 	void set_##name(type n);\
@@ -29,6 +30,7 @@ struct mcommand {
 	} fields;
 } command;
 
+void usage(char *cmd, FILE *out, char *arg0);
 void parse_config();
 void parse_cli(int argc, char **argv);
 void free_config();

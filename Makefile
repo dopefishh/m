@@ -6,7 +6,8 @@ LDFLAGS?=
 
 VERSION:=0.1
 PROGRAM:=m
-OBJS:=file.o db.o m.o util.o xdg.o parse.o config.o log.o exclude.o list.o search.o
+OBJS:=file.o db.o m.o util.o xdg.o parse.o config.o log.o exclude.o list.o search.o\
+	config/search.o config/update.o config/print.o
 
 ifdef USE_FLAC
 CFLAGS+=-DUSE_FLAC $(shell pkg-config --cflags flac)

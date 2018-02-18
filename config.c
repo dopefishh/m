@@ -13,6 +13,10 @@
 #include "id3map.h"
 #endif
 
+#include "config/search.h"
+#include "config/update.h"
+#include "config/print.h"
+
 #define ASSIGNFREE(a, v) {free(a); a = v;}
 
 struct mcommand command =
@@ -90,107 +94,11 @@ void usage(char *cmd, FILE *out, char *arg0)
 			"  search                  Search the database\n"
 			, arg0);
 	} else if (strcmp(cmd, "print") == 0) {
-		fprintf(out,
-			"Usage: %s [...] print [OPTS]\n"
-			"\n"
-			"Options:\n"
-			, arg0);
+		print_usage(out, arg0);
 	} else if (strcmp(cmd, "update") == 0) {
-		fprintf(out,
-			"Usage: %s [...] update [OPTS]\n"
-			"\n"
-			"Options:\n"
-			"  -h,--help               Show this help\n"
-			"  -f,--force              Force reread the entire database\n"
-			"  -x,--filesystem         Stay within one filesystem\n"
-			, arg0);
+		update_usage(out, arg0);
 	} else if (strcmp(cmd, "search") == 0) {
-		fprintf(out,
-			"Usage: %s [...] search [OPTS]\n"
-			"\n"
-			"Options:\n"
-			"  -h,--help               Show this help\n"
-			, arg0);
-	}
-}
-
-static struct option print_lopts[] =
-{
-	{"help",        no_argument, 0, 'h'},
-	{0, 0, 0, 0}
-};
-
-static const char *print_optstring = "h";
-
-void parse_print_cli(int argc, char **argv)
-{
-	int oi = 0;
-	int c;
-	while((c = getopt_long(argc, argv, print_optstring, print_lopts, &oi)) != -1){
-		switch (c) {
-		case 'h':
-			usage("print", stdout, argv[0]);
-			exit(EXIT_SUCCESS);
-		default:
-			usage(NULL, stderr, argv[0]);
-			die("");
-		}
-	}
-}
-
-static struct option update_lopts[] =
-{
-	{"force",       no_argument, 0, 'f'},
-	{"filesystem",  no_argument, 0, 'x'},
-	{"help",        no_argument, 0, 'h'},
-	{0, 0, 0, 0}
-};
-
-static const char *update_optstring = "hfx";
-
-void parse_update_cli(int argc, char **argv)
-{
-	int oi = 0;
-	int c;
-	while((c = getopt_long(argc, argv, update_optstring, update_lopts, &oi)) != -1){
-		switch (c) {
-		case 'f':
-			command.fields.update_opts.force_update = true;
-			break;
-		case 'x':
-			command.fields.update_opts.fix_filesystem = true;
-			break;
-		case 'h':
-			usage("print", stdout, argv[0]);
-			exit(EXIT_SUCCESS);
-		default:
-			usage(NULL, stderr, argv[0]);
-			die("");
-		}
-	}
-}
-
-static struct option search_lopts[] =
-{
-	{"help",        no_argument, 0, 'h'},
-	{0, 0, 0, 0}
-};
-
-static const char *search_optstring = "h";
-
-void parse_search_cli(int argc, char **argv)
-{
-	int oi = 0;
-	int c;
-	while((c = getopt_long(argc, argv, search_optstring, search_lopts, &oi)) != -1){
-		switch (c) {
-		case 'h':
-			usage("print", stdout, argv[0]);
-			exit(EXIT_SUCCESS);
-		default:
-			usage(NULL, stderr, argv[0]);
-			die("");
-		}
+		search_usage(out, arg0);
 	}
 }
 
@@ -259,13 +167,13 @@ void parse_cli(int argc, char **argv)
 		logmsg(debug, "Positional arguments\n");
 		if (strcmp(argv[optind], "print") == 0) {
 			command.command = c_print;
-			parse_print_cli(argc, argv);
+			print_cli(argc, argv);
 		} else if (strcmp(argv[optind], "update") == 0) {
 			command.command = c_update;
-			parse_update_cli(argc, argv);
+			update_cli(argc, argv);
 		} else if (strcmp(argv[optind], "search") == 0) {
 			command.command = c_search;
-			parse_search_cli(argc, argv);
+			search_cli(argc, argv);
 		} else {
 			logmsg(warn, "Unknown command: %s\n", argv[optind]);
 			usage(NULL, stderr, argv[0]);
