@@ -87,6 +87,7 @@ void usage(char *cmd, FILE *out, char *arg0)
 			"Commands (default: update)\n"
 			"  print                   Print the database\n"
 			"  update                  Update the database\n"
+			"  search                  Search the database\n"
 			, arg0);
 	} else if (strcmp(cmd, "print") == 0) {
 		fprintf(out,
@@ -102,6 +103,13 @@ void usage(char *cmd, FILE *out, char *arg0)
 			"  -h,--help               Show this help\n"
 			"  -f,--force              Force reread the entire database\n"
 			"  -x,--filesystem         Stay within one filesystem\n"
+			, arg0);
+	} else if (strcmp(cmd, "search") == 0) {
+		fprintf(out,
+			"Usage: %s [...] search [OPTS]\n"
+			"\n"
+			"Options:\n"
+			"  -h,--help               Show this help\n"
 			, arg0);
 	}
 }
@@ -138,7 +146,7 @@ static struct option update_lopts[] =
 	{0, 0, 0, 0}
 };
 
-static const char *update_optstring = "h:fx";
+static const char *update_optstring = "hfx";
 
 void parse_update_cli(int argc, char **argv)
 {
@@ -152,6 +160,30 @@ void parse_update_cli(int argc, char **argv)
 		case 'x':
 			command.fields.update_opts.fix_filesystem = true;
 			break;
+		case 'h':
+			usage("print", stdout, argv[0]);
+			exit(EXIT_SUCCESS);
+		default:
+			usage(NULL, stderr, argv[0]);
+			die("");
+		}
+	}
+}
+
+static struct option search_lopts[] =
+{
+	{"help",        no_argument, 0, 'h'},
+	{0, 0, 0, 0}
+};
+
+static const char *search_optstring = "h";
+
+void parse_search_cli(int argc, char **argv)
+{
+	int oi = 0;
+	int c;
+	while((c = getopt_long(argc, argv, search_optstring, search_lopts, &oi)) != -1){
+		switch (c) {
 		case 'h':
 			usage("print", stdout, argv[0]);
 			exit(EXIT_SUCCESS);
@@ -223,7 +255,7 @@ void parse_cli(int argc, char **argv)
 	if (optind < argc) {
 		argc -= optind;
 		argv += optind;
-		optind = 1;
+		optind = 0;
 		logmsg(debug, "Positional arguments\n");
 		if (strcmp(argv[optind], "print") == 0) {
 			command.command = c_print;
@@ -231,6 +263,9 @@ void parse_cli(int argc, char **argv)
 		} else if (strcmp(argv[optind], "update") == 0) {
 			command.command = c_update;
 			parse_update_cli(argc, argv);
+		} else if (strcmp(argv[optind], "search") == 0) {
+			command.command = c_search;
+			parse_search_cli(argc, argv);
 		} else {
 			logmsg(warn, "Unknown command: %s\n", argv[optind]);
 			usage(NULL, stderr, argv[0]);
