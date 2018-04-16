@@ -17,8 +17,8 @@ void search_usage(FILE *out, char *arg0){
 
 static struct option search_lopts[] =
 {
-	{"group",       required_argument, 0, 'h'},
-	{"help",        no_argument,       0, 'g'},
+	{"group",       required_argument, 0, 'g'},
+	{"help",        no_argument,       0, 'h'},
 	{0, 0, 0, 0}
 };
 
@@ -28,6 +28,8 @@ void search_cli(int argc, char **argv)
 {
 	int oi = 0;
 	int c;
+	command.fields.search_opts.grouppattern = NULL;
+	command.fields.search_opts.query = NULL;
 	while((c = getopt_long(argc, argv, search_optstring, search_lopts, &oi)) != -1){
 		switch (c) {
 		case 'g':
@@ -50,6 +52,7 @@ void search_cli(int argc, char **argv)
 			querylength += strlen(argv[i]) + 1;
 		}
 
+		free(command.fields.search_opts.query);
 		char *q = (command.fields.search_opts.query = malloc(querylength));
 
 		for(int i = optind; i<argc; i++){
