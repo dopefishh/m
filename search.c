@@ -25,6 +25,13 @@ struct db_tags {
 	char **values;
 };
 */
+void search_db(struct db * db)
+{
+	struct query *q = parse_query(command.fields.search_opts.query);
+	logmsg(debug, "Searching for %s\n", command.fields.search_opts.query);
+	free(q);
+	(void)db;
+}
 
 struct resultset *search(struct db *db, struct query *q)
 {

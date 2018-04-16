@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "log.h"
-#include "util.h"
-#include "db.h"
-#include "xdg.h"
 #include "config.h"
+#include "db.h"
+#include "log.h"
+#include "search.h"
+#include "util.h"
+#include "xdg.h"
 
 int main(int argc, char **argv)
 {
@@ -37,6 +38,10 @@ int main(int argc, char **argv)
 		case c_update:
 			logmsg(info, "Updating db\n");
 			update_db(db);
+			break;
+		case c_search:
+			logmsg(info, "Searching db\n");
+			search_db(db);
 			break;
 		default:
 			logmsg(warn, "Unknown command\n");

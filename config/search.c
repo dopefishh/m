@@ -54,6 +54,7 @@ void search_cli(int argc, char **argv)
 
 		free(command.fields.search_opts.query);
 		char *q = (command.fields.search_opts.query = malloc(querylength));
+		q[0] = '\0';
 
 		for(int i = optind; i<argc; i++){
 			if(i > optind)
@@ -62,6 +63,7 @@ void search_cli(int argc, char **argv)
 		}
 
 		optind = 0;
+		logmsg(debug, "query: %s\n", q);
 	} else {
 		logmsg(warn, "At least one positional argument required\n");
 		die("");
