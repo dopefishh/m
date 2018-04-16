@@ -1,16 +1,16 @@
 #include <string.h>
 
 #ifdef USE_FLAC
-#include "file_flac.h"
+#include "file/flac.h"
 #endif
 #ifdef USE_OGG
-#include "file_ogg.h"
+#include "file/ogg.h"
 #endif
 #ifdef USE_OPUS
-#include "file_opus.h"
+#include "file/opus.h"
 #endif
 #ifdef USE_MP3
-#include "file_mp3.h"
+#include "file/mp3.h"
 #endif
 
 #include "db.h"

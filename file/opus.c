@@ -2,10 +2,10 @@
 
 #include <opus/opusfile.h>
 
-#include "file.h"
-#include "util.h"
-#include "db.h"
-#include "log.h"
+#include "../file.h"
+#include "../util.h"
+#include "../db.h"
+#include "../log.h"
 
 bool process_opus(char *p, struct db_file *f)
 {

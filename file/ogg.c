@@ -1,9 +1,9 @@
 #include <vorbis/vorbisfile.h>
 
-#include "file.h"
-#include "db.h"
-#include "util.h"
-#include "log.h"
+#include "../file.h"
+#include "../db.h"
+#include "../util.h"
+#include "../log.h"
 
 bool process_ogg(char *p, struct db_file *f)
 {

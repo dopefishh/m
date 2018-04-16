@@ -33,7 +33,7 @@ void search_db(struct db * db)
 	(void)db;
 }
 
-struct resultset *search(struct db *db, struct query *q)
+struct list *search(struct db *db, struct query *q)
 {
 	char *qs = query_to_string(q);
 	logmsg(debug, "Searching for %s\n", qs);

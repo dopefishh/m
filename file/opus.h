@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#include "db.h"
+#include "../db.h"
 
 bool process_opus(char *p, struct db_file *f);
 

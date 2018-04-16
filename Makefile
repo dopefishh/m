@@ -14,25 +14,25 @@ OBJS:=$(patsubst %.h,%.o,\
 ifdef USE_FLAC
 CFLAGS+=-DUSE_FLAC $(shell pkg-config --cflags flac)
 LDFLAGS+=$(shell pkg-config --libs flac)
-OBJS+=file_flac.o
+OBJS+=file/flac.o
 endif
 
 ifdef USE_OGG
 CFLAGS+=-DUSE_OGG $(shell pkg-config --cflags vorbisfile)
 LDFLAGS+=$(shell pkg-config --libs vorbisfile)
-OBJS+=file_ogg.o
+OBJS+=file/ogg.o
 endif
 
 ifdef USE_OPUS
 CFLAGS+=-DUSE_OPUS $(shell pkg-config --cflags opusfile)
 LDFLAGS+=$(shell pkg-config --libs opusfile)
-OBJS+=file_opus.o
+OBJS+=file/opus.o
 endif
 
 ifdef USE_MP3
 CFLAGS+=-DUSE_MP3 $(shell pkg-config --cflags id3tag)
 LDFLAGS+=$(shell pkg-config --libs id3tag)
-OBJS+=file_mp3.o id3map.o
+OBJS+=file/mp3.o id3map.o
 endif
 
 all: $(PROGRAM)

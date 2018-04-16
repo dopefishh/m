@@ -2,11 +2,11 @@
 
 #include <id3tag.h>
 
-#include "config.h"
-#include "file.h"
-#include "util.h"
-#include "db.h"
-#include "log.h"
+#include "../config.h"
+#include "../file.h"
+#include "../util.h"
+#include "../db.h"
+#include "../log.h"
 
 uint32_t process_ntags(struct id3_tag *t)
 {

@@ -2,10 +2,10 @@
 
 #include <FLAC/metadata.h>
 
-#include "file.h"
-#include "util.h"
-#include "db.h"
-#include "log.h"
+#include "../file.h"
+#include "../util.h"
+#include "../db.h"
+#include "../log.h"
 
 bool process_flac(char *p, struct db_file *f)
 {
