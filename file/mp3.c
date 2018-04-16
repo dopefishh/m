@@ -7,6 +7,7 @@
 #include "../util.h"
 #include "../db.h"
 #include "../log.h"
+#include "../id3map.h"
 
 uint32_t process_ntags(struct id3_tag *t)
 {
@@ -124,7 +125,6 @@ void process_frame(struct id3_frame *fr, char **ks, char **vs, uint32_t *ti)
 	}
 
 	//Determine frame type
-	//If not a user tag, we look it up
 	if(key == NULL){
 		//Lookup key
 		key = safe_strdup(id3map_get(fr->id));
