@@ -223,7 +223,7 @@ void parse_config()
 			char *tok;
 			tok = strtok(v, ",");
 			while(tok != NULL){
-				id3map_add_from_string(tok);
+				id3map_add_from_string(trim(tok));
 				tok = strtok(NULL, ",");
 			}
 #endif
