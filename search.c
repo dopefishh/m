@@ -28,22 +28,54 @@ struct db_tags {
 	char **values;
 };
 */
+
+struct listitem *search(struct db_entry *db, struct query *q, struct listitem *rhd)
+{
+	logmsg(debug, "recurse in %s with %d files and %d dirs\n"
+		, db->dir, db->nfile, db->ndir);
+	//In the files
+	for(uint64_t file = 0; file<db->nfile; file++){
+		struct db_file f = db->files[file];
+		struct db_tags *t = f.tags;
+		//In their tags
+		for(uint64_t tag = 0; tag<t->ntags; tag++){
+			//For each search key
+			for(struct listitem *c = head; c != NULL; c = c->next){
+				//Match!
+				logmsg(debug, "compare: %s with %s\n", c->value, t->values[tag]);
+				if(strcmp(t->keys[tag], c->value) == 0
+						&& strcmp(t->values[tag], q->query) == 0){
+					rhd = list_prepend(rhd, (void *)&f);
+					break;
+				}
+			}
+
+		}
+	}
+	for(uint64_t i = 0; i<db->ndir; i++){
+		rhd = search(&db->dirs[i], q, rhd);
+	}
+	return rhd;
+}
+
 void search_db(struct db * db)
 {
 	struct query *q = parse_query(command.fields.search_opts.query);
 	logmsg(debug, "Searching for %s\n", command.fields.search_opts.query);
 
+	//Search
+	struct listitem *result = search(db->root, q, NULL);
+
+	//Print
+	for(struct listitem *i = result; i != NULL; i = i->next){
+		struct db_file *f = (struct db_file *)i->value;
+		printf("%p\n", f->path);
+	}
+
+	//Free
+	list_free(result, list_free_ignore);
 
 	free(q);
-	(void)db;
-}
-
-struct list *search(struct db *db, struct query *q)
-{
-	char *qs = query_to_string(q);
-	logmsg(debug, "Searching for %s\n", qs);
-	free(qs);
-	return NULL;
 	(void)db;
 }
 

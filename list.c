@@ -75,3 +75,8 @@ void list_free(struct listitem *head, void(*myfree)(void *))
 		head = t;
 	}
 }
+
+void list_free_ignore(void *p)
+{
+	(void)p;
+}

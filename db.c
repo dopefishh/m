@@ -253,7 +253,7 @@ struct db *get_db(char *path)
 	logmsg(debug, "Db requested at: %s\n", path);
 	if(path_exists(path)){
 		logmsg(debug, "Path exists\n");
-		if(command.fields.update_opts.force_update){
+		if(command.command == c_update && command.fields.update_opts.force_update){
 			logmsg(debug, "Forcing a new db anyways\n");
 			return init_db();
 		}
