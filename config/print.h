@@ -4,6 +4,6 @@
 #include <stdio.h>
 
 void print_usage(FILE *out, char *arg0);
-void print_cli(int argc, char **argv);
+void print_cli(int argc, char **argv, char *argv0);
 
 #endif

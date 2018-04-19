@@ -26,7 +26,7 @@ static struct option update_lopts[] =
 
 static const char *update_optstring = "hfx";
 
-void update_cli(int argc, char **argv)
+void update_cli(int argc, char **argv, char *argv0)
 {
 	int oi = 0;
 	int c;
@@ -39,10 +39,10 @@ void update_cli(int argc, char **argv)
 			command.fields.update_opts.fix_filesystem = true;
 			break;
 		case 'h':
-			usage("print", stdout, argv[0]);
+			usage("print", stdout, argv0);
 			exit(EXIT_SUCCESS);
 		default:
-			usage(NULL, stderr, argv[0]);
+			usage(NULL, stderr, argv0);
 			die("");
 		}
 	}

@@ -24,7 +24,7 @@ static struct option search_lopts[] =
 
 static const char *search_optstring = "hg:";
 
-void search_cli(int argc, char **argv)
+void search_cli(int argc, char **argv, char *argv0)
 {
 	int oi = 0;
 	int c;
@@ -37,10 +37,10 @@ void search_cli(int argc, char **argv)
 				safe_strdup(optarg));
 			break;
 		case 'h':
-			usage("print", stdout, argv[0]);
+			usage("search", stdout, argv0);
 			exit(EXIT_SUCCESS);
 		default:
-			usage(NULL, stderr, argv[0]);
+			usage(NULL, stderr, argv0);
 			die("");
 		}
 	}

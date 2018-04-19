@@ -21,17 +21,17 @@ static struct option print_lopts[] =
 
 static const char *print_optstring = "h";
 
-void print_cli(int argc, char **argv)
+void print_cli(int argc, char **argv, char *argv0)
 {
 	int oi = 0;
 	int c;
 	while((c = getopt_long(argc, argv, print_optstring, print_lopts, &oi)) != -1){
 		switch (c) {
 		case 'h':
-			usage("print", stdout, argv[0]);
+			usage("print", stdout, argv0);
 			exit(EXIT_SUCCESS);
 		default:
-			usage(NULL, stderr, argv[0]);
+			usage(NULL, stderr, argv0);
 			die("");
 		}
 	}

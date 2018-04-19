@@ -102,9 +102,6 @@ void usage(char *cmd, FILE *out, char *arg0)
 
 void parse_cli(int argc, char **argv)
 {
-	for(int i = 0; i<argc; i++){
-		printf("cli[%i] = %s\n", i, argv[i]);
-	}
 	int oi = 0;
 	int c;
 	while((c = getopt_long(argc, argv, optstring, lopts, &oi)) != -1){
@@ -164,13 +161,13 @@ void parse_cli(int argc, char **argv)
 		logmsg(debug, "Positional arguments\n");
 		if (strcmp(argv[optind], "print") == 0) {
 			command.command = c_print;
-			print_cli(argc, argv);
+			print_cli(argc, argv, argv[0]);
 		} else if (strcmp(argv[optind], "update") == 0) {
 			command.command = c_update;
-			update_cli(argc, argv);
+			update_cli(argc, argv, argv[0]);
 		} else if (strcmp(argv[optind], "search") == 0) {
 			command.command = c_search;
-			search_cli(argc, argv);
+			search_cli(argc, argv, argv[0]);
 		} else {
 			logmsg(warn, "Unknown command: %s\n", argv[optind]);
 			usage(NULL, stderr, argv[0]);

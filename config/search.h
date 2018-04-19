@@ -4,6 +4,6 @@
 #include <stdio.h>
 
 void search_usage(FILE *out, char *arg0);
-void search_cli(int argc, char **argv);
+void search_cli(int argc, char **argv, char *argv0);
 
 #endif
