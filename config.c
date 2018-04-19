@@ -8,6 +8,7 @@
 #include "exclude.h"
 #include "parse.h"
 #include "log.h"
+#include "search.h"
 
 #ifdef USE_MP3
 #include "id3map.h"
@@ -230,6 +231,14 @@ void parse_config()
 		} else if (strcmp("exclude", k) == 0){
 			logmsg(debug, "Parsing exclude pattern\n", v);
 			exclude_add(safe_strdup(v));
+		} else if (strcmp("searchkeys", k) == 0){
+			logmsg(debug, "Parsing search keys\n", v);
+			char *tok;
+			tok = strtok(v, ",");
+			while(tok != NULL){
+				search_key_add(safe_strdup(trim(tok)));
+				tok = strtok(NULL, ",");
+			}
 		} else {
 			logmsg(warn, "Unknown config line: %s\n", k);
 		}
@@ -247,4 +256,6 @@ void free_config()
 #ifdef USE_MP3
 	id3map_free();
 #endif
+
+	search_key_free();
 }

@@ -2,6 +2,9 @@
 #include "search.h"
 #include "db.h"
 #include "log.h"
+#include "list.h"
+
+static struct listitem *head = NULL;
 
 /*
 struct db_entry {
@@ -29,6 +32,8 @@ void search_db(struct db * db)
 {
 	struct query *q = parse_query(command.fields.search_opts.query);
 	logmsg(debug, "Searching for %s\n", command.fields.search_opts.query);
+
+
 	free(q);
 	(void)db;
 }
@@ -39,7 +44,6 @@ struct list *search(struct db *db, struct query *q)
 	logmsg(debug, "Searching for %s\n", qs);
 	free(qs);
 	return NULL;
-	(void)q;
 	(void)db;
 }
 
@@ -53,4 +57,14 @@ struct query *parse_query(char *qstring)
 char *query_to_string(struct query *q)
 {
 	return safe_strdup(q->query);
+}
+
+void search_key_add(char *k)
+{
+	head = list_prepend(head, (void *)k);
+}
+
+void search_key_free()
+{
+	list_free(head, free);
 }

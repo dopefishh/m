@@ -36,7 +36,6 @@ void id3map_add_from_string(char *id)
 		txxx = key1;
 		key = key1;
 	}
-	logmsg(debug, "id: '%s', key: '%s', txxx: %s\n", id, key, txxx);
 	id3map_add(trim(id), trim(key), txxx);
 }
 
