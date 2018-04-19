@@ -11,8 +11,9 @@ library = /mnt/data/music
 # This is a comma separated list containing key:value pairs.
 # User tags (TXXX) are assumed to be a list of two items, the first being the
 # tagname and the second the value
-# This mapping below is the default mapping. Duplicates automaticall overwrite
+# This mapping below is the default mapping. Duplicates automatically overwrite
 # the previous value.
+# If a tag is not in the mapping, it will be used as the name
 id3mapping = TALB:ALBUM,\
 	TSOA:ALBUMSORT,\
 	XSOA:ALBUMSORT,\
@@ -50,7 +51,8 @@ id3mapping = TALB:ALBUM,\
 	TCOP:COPYRIGHT,\
 	TLAN:LANGUAGE,\
 	WCOP:LICENCE,\
-	USLT:LYRICS
+	USLT:LYRICS,\
+	TXXX:ALBUMARTISTSORT:ALBUMARTIST2
 
 #	IPLS:arranger,\
 #	IPLS:engineer,\

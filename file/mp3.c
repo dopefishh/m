@@ -66,8 +66,8 @@ void process_frame(struct id3_frame *fr, char **ks, char **vs, uint32_t *ti)
 	uint32_t oldti = *ti;
 
 	//If it is a user tag, we assume the first value to be the tagname
-	unsigned int st = strcmp(fr->id, "TXXX") == 0 ? 1 : 0;
-	char *key = NULL;
+	bool st = strcmp(fr->id, "TXXX") == 0;
+	char *oldkey = NULL, *key = NULL;
 
 	//Extract fields
 	for(unsigned int i = 0; i<fr->nfields; i++){
@@ -80,13 +80,13 @@ void process_frame(struct id3_frame *fr, char **ks, char **vs, uint32_t *ti)
 			break;
 		case ID3_FIELD_TYPE_LATIN1:
 		case ID3_FIELD_TYPE_LATIN1FULL:
-			if(st == 1 && key == NULL)
+			if(st && key == NULL)
 				key = latin1_to_utf8(f.latin1.ptr);
 			else
 				vs[(*ti)++] = latin1_to_utf8(f.latin1.ptr);
 			break;
 		case ID3_FIELD_TYPE_LATIN1LIST:
-			if(st == 1)
+			if(st)
 				key = latin1_to_utf8(f.latin1list.strings[0]);
 			for(unsigned int j = 0; j<f.latin1list.nstrings; j++)
 				vs[(*ti)++] = latin1_to_utf8(
@@ -94,7 +94,7 @@ void process_frame(struct id3_frame *fr, char **ks, char **vs, uint32_t *ti)
 			break;
 		case ID3_FIELD_TYPE_STRING:
 		case ID3_FIELD_TYPE_STRINGFULL:
-			if(st == 1 && key == NULL)
+			if(st && key == NULL)
 				key = (char *)id3_ucs4_utf8duplicate(
 					f.string.ptr);
 			else
@@ -102,7 +102,7 @@ void process_frame(struct id3_frame *fr, char **ks, char **vs, uint32_t *ti)
 					f.string.ptr);
 			break;
 		case ID3_FIELD_TYPE_STRINGLIST:
-			if(st == 1)
+			if(st)
 				key = (char *)id3_ucs4_utf8duplicate(
 					f.stringlist.strings[0]);
 			for(unsigned int j = 0; j<f.stringlist.nstrings; j++)
@@ -125,11 +125,14 @@ void process_frame(struct id3_frame *fr, char **ks, char **vs, uint32_t *ti)
 	}
 
 	//Determine frame type
-	if(key == NULL){
-		//Lookup key
-		key = safe_strdup(id3map_get(fr->id));
-		logmsg(debug, "Found lookup from id3map: %s\n", key);
-	}
+	logmsg(debug, "key: '%s'\n", key);
+
+	//Lookup key
+	oldkey = key;
+	key = safe_strdup(id3map_get(fr->id, st ? key : NULL));
+	free(oldkey);
+	logmsg(debug, "Found lookup from id3map: %s\n", key);
+
 	for(uint32_t i = oldti; i<*ti; i++){
 		ks[i] = safe_strdup(key);
 	}

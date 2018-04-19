@@ -34,10 +34,5 @@ void parse_config();
 void parse_cli(int argc, char **argv);
 void free_config();
 
-#ifdef USE_MP3
-void id3map_add(char *, char *);
-char *id3map_get(char *);
-void id3map_free();
-#endif
 
 #endif
