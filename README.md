@@ -39,3 +39,6 @@ The config is searched for according to the `XDG` spec. Thus in
 
 For information about the format and the possible options, refer to the
 `config.example` file.
+
+### CI
+![travis](https://travis-ci.org/dopefishh/m.svg?branch=master)
