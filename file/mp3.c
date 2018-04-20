@@ -124,9 +124,6 @@ void process_frame(struct id3_frame *fr, char **ks, char **vs, uint32_t *ti)
 		}
 	}
 
-	//Determine frame type
-	logmsg(debug, "key: '%s'\n", key);
-
 	//Lookup key
 	oldkey = key;
 	key = safe_strdup(id3map_get(fr->id, st ? key : NULL));
@@ -152,7 +149,7 @@ bool process_mp3(char *p, struct db_file *f)
 	uint32_t tagindex = 0;
 	for(unsigned int i = 0; i<mt->nframes; i++){
 		process_frame(mt->frames[i],
-			f->tags->values, f->tags->keys, &tagindex);
+			f->tags->keys, f->tags->values, &tagindex);
 	}
 	logmsg(info, "Really only written up to %d tags\n", tagindex-1);
 	f->tags->ntags = tagindex;

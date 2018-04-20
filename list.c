@@ -65,6 +65,15 @@ struct listitem *list_delete(struct listitem *head, uint32_t index, void **item)
 	return head;
 }
 
+void *list_iterate(struct listitem *head, void *st, void *(*stf)(void *, void *))
+{
+	while(head != NULL){
+		st = stf(st, head->value);
+		head = head->next;
+	}
+	return st;
+}
+
 void list_free(struct listitem *head, void(*myfree)(void *))
 {
 	struct listitem *t;
@@ -74,4 +83,9 @@ void list_free(struct listitem *head, void(*myfree)(void *))
 		free(head);
 		head = t;
 	}
+}
+
+void list_free_ignore(void *p)
+{
+	(void)p;
 }
