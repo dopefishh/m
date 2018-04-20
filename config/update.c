@@ -39,7 +39,7 @@ void update_cli(int argc, char **argv, char *argv0)
 			command.fields.update_opts.fix_filesystem = true;
 			break;
 		case 'h':
-			usage("print", stdout, argv0);
+			usage("update", stdout, argv0);
 			exit(EXIT_SUCCESS);
 		default:
 			usage(NULL, stderr, argv0);
