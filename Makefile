@@ -38,7 +38,7 @@ endif
 all: $(PROGRAM)
 
 $(PROGRAM): $(OBJS)
-	$(LINK.c) $(LDLIBS) $^ $(OUTPUT_OPTION)
+	$(LINK.c) $^ $(LDLIBS) $(OUTPUT_OPTION)
 
 %.1.gz: %
 	help2man -n m -s 1 -m User\ Commands ./$< | gzip -9 > $@
