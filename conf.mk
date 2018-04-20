@@ -38,3 +38,6 @@ USE_FLAC:=yes
 USE_OPUS:=yes
 # Enable ogg tagging support
 USE_OGG:=yes
+
+# Compile with debugging support
+DEBUG:=yes

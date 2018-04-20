@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #include "log.h"
 #include "exclude.h"
@@ -291,14 +292,13 @@ void print_db(struct db *db, FILE *f)
 	if(db == NULL)
 		safe_fputs("(NULL)\n", f);
 
-	struct tm tm;
-	localtime_r(&db->initialized, &tm);
+	struct tm *tm = localtime(&db->initialized);
 	char b[200] = "";
-	strftime(b, 200, "%c", &tm);
+	strftime(b, 200, "%c", tm);
 	safe_fprintf(f, "Initialized  : %s\n", b);
 
-	localtime_r(&db->last_modified, &tm);
-	strftime(b, 200, "%c", &tm);
+	tm = localtime(&db->last_modified);
+	strftime(b, 200, "%c", tm);
 	safe_fprintf(f, "Last modified: %s\n", b);
 
 	safe_fprintf(f, "Root: : %s\n", db->rootpath);

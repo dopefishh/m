@@ -1,8 +1,15 @@
 SHELL = /bin/sh
 include conf.mk
 
-CFLAGS?=-Wall -Wpedantic -Wextra -Werror -g -std=gnu11
+
+CFLAGS?=-Wall -Wpedantic -Wextra -Werror -D_DEFAULT_SOURCE
 LDFLAGS?=
+
+ifdef DEBUG
+CFLAGS+=-g
+else
+CFLAGS+=-O3
+endif
 
 VERSION:=0.1
 PROGRAM:=m
@@ -38,7 +45,7 @@ endif
 all: $(PROGRAM)
 
 $(PROGRAM): $(OBJS)
-	$(LINK.c) $^ $(LDLIBS) $(OUTPUT_OPTION)
+	$(LINK.c) $(LDLIBS) $^ $(OUTPUT_OPTION)
 
 %.1.gz: %
 	help2man -n m -s 1 -m User\ Commands ./$< | gzip -9 > $@
