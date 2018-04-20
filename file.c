@@ -86,7 +86,7 @@ bool file_tag_split_eq(char *k, char **key, char **value)
 		return false;
 	}
 	v++[0] = '\0';
-	*key = safe_strdup(v);
-	*value = safe_strdup(k);
+	*key = safe_strdup(k);
+	*value = safe_strdup(v);
 	return true;
 }

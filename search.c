@@ -31,29 +31,37 @@ struct db_tags {
 
 struct listitem *search(struct db_entry *db, struct query *q, struct listitem *rhd)
 {
-	logmsg(debug, "recurse in %s with %d files and %d dirs\n"
-		, db->dir, db->nfile, db->ndir);
+	//In the directories we recurse
+	for(uint64_t i = 0; i<db->ndir; i++){
+		rhd = search(&(db->dirs[i]), q, rhd);
+	}
 	//In the files
 	for(uint64_t file = 0; file<db->nfile; file++){
 		struct db_file f = db->files[file];
+		logmsg(debug, "path: %s\n", f.path);
 		struct db_tags *t = f.tags;
+		if(f.tags == NULL){
+			logmsg(debug, "skip non music file\n");
+			continue;
+		}
 		//In their tags
 		for(uint64_t tag = 0; tag<t->ntags; tag++){
 			//For each search key
 			for(struct listitem *c = head; c != NULL; c = c->next){
 				//Match!
-				logmsg(debug, "compare: %s with %s\n", c->value, t->values[tag]);
-				if(strcmp(t->keys[tag], c->value) == 0
-						&& strcmp(t->values[tag], q->query) == 0){
-					rhd = list_prepend(rhd, (void *)&f);
-					break;
+//				logmsg(debug, "compare: %s with %s\n", c->value, t->keys[tag]);
+				//Match in tag
+				if(strcmp(t->keys[tag], c->value) == 0){
+					logmsg(debug, "and %s with %s\n", t->values[tag], q->query);
+					if(strcmp(t->values[tag], q->query) == 0){
+						logmsg(debug, "match\n");
+						rhd = list_prepend(rhd, &f);
+						break;
+					}
 				}
 			}
 
 		}
-	}
-	for(uint64_t i = 0; i<db->ndir; i++){
-		rhd = search(&db->dirs[i], q, rhd);
 	}
 	return rhd;
 }
@@ -68,8 +76,8 @@ void search_db(struct db * db)
 
 	//Print
 	for(struct listitem *i = result; i != NULL; i = i->next){
-		struct db_file *f = (struct db_file *)i->value;
-		printf("%p\n", f->path);
+		struct db_file *f = (struct db_file *)(i->value);
+		printf("%s\n", f->path);
 	}
 
 	//Free
