@@ -1,7 +1,7 @@
 SHELL = /bin/sh
 include conf.mk
 
-CFLAGS?=-Wall -Wpedantic -Wextra -Werror -g
+CFLAGS?=-Wall -Wpedantic -Wextra -Werror -g -std=gnu11
 LDFLAGS?=
 
 VERSION:=0.1
