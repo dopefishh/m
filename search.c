@@ -6,28 +6,10 @@
 
 static struct listitem *head = NULL;
 
-/*
-struct db_entry {
-	char *dir;
-	uint64_t nfile;
-	uint64_t ndir;
-	struct db_file *files;
-	struct db_entry *dirs;
-};
-
-struct db_file {
-	char *path;
-	time_t mtime;
-	size_t size;
-	struct db_tags *tags;
-};
-
-struct db_tags {
-	uint64_t ntags;
-	char **keys;
-	char **values;
-};
-*/
+static int tag_cmp(const void *k, const void *v)
+{
+	return strcmp((char *)k, ((struct db_tag *)v)->key);
+}
 
 struct listitem *search(struct db_entry *db, struct query *q, struct listitem *rhd)
 {
@@ -39,25 +21,24 @@ struct listitem *search(struct db_entry *db, struct query *q, struct listitem *r
 	for(uint64_t file = 0; file<db->nfile; file++){
 		struct db_file *f = &(db->files[file]);
 		logmsg(debug, "path: %s\n", f->path);
-		struct db_tags *t = f->tags;
 		if(f->tags == NULL){
 			logmsg(debug, "skip non music file\n");
 			continue;
 		}
-		//In their tags
-		for(uint64_t tag = 0; tag<t->ntags; tag++){
-			//For each search key
-			struct listitem *c = head;
-			while(c != NULL){
-				if(strcmp(t->keys[tag], c->value) == 0){
-					if(strcmp(t->values[tag], q->query) == 0){
-						rhd = list_prepend(rhd, f);
-						break;
-					}
+		//For each search key
+		struct listitem *c = head;
+		while(c != NULL){
+			//Find if the tag is there
+			void *res = bsearch(c->value, f->tags, f->ntags,
+				sizeof(struct db_tag), tag_cmp);
+			if(res != NULL){
+				if(strcmp(((struct db_tag*)res)->value,
+						q->query) == 0){
+					rhd = list_prepend(rhd, f);
+					break;
 				}
-				c = c->next;
 			}
-
+			c = c->next;
 		}
 	}
 	return rhd;

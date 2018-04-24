@@ -76,20 +76,17 @@ void parse_db_file(FILE *f, struct db_file *r)
 	r->mtime = parse_int64(f);
 	r->size = parse_int64(f);
 	r->tags = NULL;
-	uint64_t ntags = parse_int64(f);
-	if(ntags == 0){
+	r->ntags = parse_int64(f);
+	if(r->ntags == 0){
 		logmsg(debug, "Parsed non music db_file\n");
 		return;
 	}
-	r->tags = safe_malloc(sizeof(struct db_tags));
-	r->tags->ntags = ntags;
-	r->tags->keys = safe_malloc(ntags*sizeof(char *));
-	r->tags->values = safe_malloc(ntags*sizeof(char *));
-	for(uint64_t i = 0; i<ntags; i++){
-		r->tags->keys[i] = parse_string(f);
-		r->tags->values[i] = parse_string(f);
+	r->tags = safe_malloc(r->ntags*sizeof(struct db_tag));
+	for(uint64_t i = 0; i<r->ntags; i++){
+		r->tags[i].key = parse_string(f);
+		r->tags[i].value = parse_string(f);
 	}
-	logmsg(debug, "Parsed db_file with %lu tags: %s\n", ntags, r->path);
+	logmsg(debug, "Parsed db_file with %lu tags: %s\n", r->ntags, r->path);
 }
 
 void parse_db_entry(FILE *f, struct db_entry *r)
@@ -118,12 +115,12 @@ void write_db_file(FILE *f, struct db_file *e)
 		logmsg(debug, "Written non music db_file\n");
 		return;
 	}
-	write_int64(f, e->tags->ntags);
-	for(uint64_t i = 0; i<e->tags->ntags; i++){
-		write_string(f, e->tags->keys[i]);
-		write_string(f, e->tags->values[i]);
+	write_int64(f, e->ntags);
+	for(uint64_t i = 0; i<e->ntags; i++){
+		write_string(f, e->tags[i].key);
+		write_string(f, e->tags[i].value);
 	}
-	logmsg(debug, "Written db_file with %lu tags\n", e->tags->ntags);
+	logmsg(debug, "Written db_file with %lu tags\n", e->ntags);
 }
 
 void write_db_entry(FILE *f, struct db_entry *e)

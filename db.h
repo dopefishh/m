@@ -25,13 +25,14 @@ struct db_file {
 	char *path;
 	time_t mtime;
 	size_t size;
-	struct db_tags *tags;
+	uint64_t ntags;
+	//This is sorted
+	struct db_tag *tags;
 };
 
-struct db_tags {
-	uint64_t ntags;
-	char **keys;
-	char **values;
+struct db_tag {
+	char *key;
+	char *value;
 };
 
 struct db *get_db(char *path);

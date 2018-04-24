@@ -61,7 +61,7 @@ char *latin1_to_utf8(unsigned char *l)
 	return r;
 }
 
-void process_frame(struct id3_frame *fr, char **ks, char **vs, uint32_t *ti)
+void process_frame(struct id3_frame *fr, struct db_tag *tags, uint32_t *ti)
 {
 	uint32_t oldti = *ti;
 
@@ -83,13 +83,14 @@ void process_frame(struct id3_frame *fr, char **ks, char **vs, uint32_t *ti)
 			if(st && key == NULL)
 				key = latin1_to_utf8(f.latin1.ptr);
 			else
-				vs[(*ti)++] = latin1_to_utf8(f.latin1.ptr);
+				tags[(*ti)++].value
+					= latin1_to_utf8(f.latin1.ptr);
 			break;
 		case ID3_FIELD_TYPE_LATIN1LIST:
 			if(st)
 				key = latin1_to_utf8(f.latin1list.strings[0]);
 			for(unsigned int j = 0; j<f.latin1list.nstrings; j++)
-				vs[(*ti)++] = latin1_to_utf8(
+				tags[(*ti)++].value = latin1_to_utf8(
 					f.latin1list.strings[j]);
 			break;
 		case ID3_FIELD_TYPE_STRING:
@@ -98,28 +99,30 @@ void process_frame(struct id3_frame *fr, char **ks, char **vs, uint32_t *ti)
 				key = (char *)id3_ucs4_utf8duplicate(
 					f.string.ptr);
 			else
-				vs[(*ti)++] = (char *)id3_ucs4_utf8duplicate(
-					f.string.ptr);
+				tags[(*ti)++].value
+					= (char *)id3_ucs4_utf8duplicate(
+						f.string.ptr);
 			break;
 		case ID3_FIELD_TYPE_STRINGLIST:
 			if(st)
 				key = (char *)id3_ucs4_utf8duplicate(
 					f.stringlist.strings[0]);
 			for(unsigned int j = 0; j<f.stringlist.nstrings; j++)
-				vs[(*ti)++] = (char *)id3_ucs4_utf8duplicate(
-					f.stringlist.strings[j]);
+				tags[(*ti)++].value
+					= (char *)id3_ucs4_utf8duplicate(
+						f.stringlist.strings[j]);
 			break;
 		case ID3_FIELD_TYPE_LANGUAGE:
 		case ID3_FIELD_TYPE_DATE:
-			vs[(*ti)++] = safe_strdup(f.immediate.value);
+			tags[(*ti)++].value = safe_strdup(f.immediate.value);
 			break;
 		case ID3_FIELD_TYPE_INT8:
 		case ID3_FIELD_TYPE_INT16:
 		case ID3_FIELD_TYPE_INT24:
 		case ID3_FIELD_TYPE_INT32:
 		case ID3_FIELD_TYPE_INT32PLUS:
-			vs[*ti] = safe_malloc(25);
-			sprintf(vs[(*ti)++], "%ld", f.number.value);
+			tags[*ti].value = safe_malloc(25);
+			sprintf(tags[(*ti)++].value, "%ld", f.number.value);
 			break;
 		}
 	}
@@ -131,7 +134,7 @@ void process_frame(struct id3_frame *fr, char **ks, char **vs, uint32_t *ti)
 	logmsg(debug, "Found lookup from id3map: %s\n", key);
 
 	for(uint32_t i = oldti; i<*ti; i++){
-		ks[i] = safe_strdup(key);
+		tags[i].key = safe_strdup(key);
 	}
 	free(key);
 }
@@ -149,13 +152,10 @@ bool process_mp3(char *p, struct db_file *f)
 	uint32_t tagindex = 0;
 	for(unsigned int i = 0; i<mt->nframes; i++){
 		process_frame(mt->frames[i],
-			f->tags->keys, f->tags->values, &tagindex);
+			f->tags, &tagindex);
 	}
 	logmsg(info, "Really only written up to %d tags\n", tagindex-1);
-	f->tags->ntags = tagindex;
-	f->tags->keys = safe_realloc(f->tags->keys,
-		f->tags->ntags*sizeof(char *));
-	f->tags->values = safe_realloc(f->tags->values,
-		f->tags->ntags*sizeof(char *));
+	f->ntags = tagindex;
+	f->tags = safe_realloc(f->tags, f->ntags*sizeof(struct db_tag));
 	return id3_file_close(mf) == 0;
 }

@@ -18,8 +18,8 @@ bool process_flac(char *p, struct db_file *f)
 
 	for(uint32_t i = 0; i<c.num_comments; i++){
 		if(!file_tag_split_eq((char *)c.comments[i].entry,
-				&f->tags->keys[i], &f->tags->values[i]))
-			f->tags->ntags--;
+				&f->tags[i].key, &f->tags[i].value))
+			f->ntags--;
 	}
 
 	FLAC__metadata_object_delete(md);

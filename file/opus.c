@@ -19,8 +19,8 @@ bool process_opus(char *p, struct db_file *f)
 
 	for(int i = 0; i<c->comments; i++)
 		if(file_tag_split_eq((char *)c->user_comments[i],
-				&f->tags->keys[i], &f->tags->values[i]))
-			f->tags->ntags--;
+				&f->tags[i].key, &f->tags[i].value))
+			f->ntags--;
 
 	op_free(of);
 	return true;

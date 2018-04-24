@@ -279,7 +279,7 @@ void print_db_entry(int indent, struct db_entry *e, FILE *f)
 		safe_fprintf(f, "| %s", e->files[i].path);
 		if(e->files[i].tags != NULL)
 			safe_fprintf(f,
-				" with %lu tags\n", e->files[i].tags->ntags);
+				" with %lu tags\n", e->files[i].ntags);
 		else
 			safe_fputs("\n", f);
 	}
