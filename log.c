@@ -38,12 +38,12 @@ void logmsg(enum loglevel lvl, char *msg, ...)
 
 void increase_loglevel()
 {
-	loglevel = (loglevel + 1) % 3;
+	loglevel = loglevel == debug ? debug : loglevel + 1;
 }
 
 void decrease_loglevel()
 {
-	loglevel = loglevel == 0 ? 0 : loglevel - 1;
+	loglevel = loglevel == warn ? warn : loglevel - 1;
 }
 
 void close_logfile()
