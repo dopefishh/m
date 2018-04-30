@@ -5,6 +5,8 @@
 
 #include "config.h"
 #include "util.h"
+#include "format.h"
+#include "list.h"
 #include "exclude.h"
 #include "parse.h"
 #include "log.h"
@@ -23,6 +25,7 @@ struct mcommand command =
 	, .config      = NULL
 	, .libraryroot = NULL
 	, .logfile     = NULL
+	, .fmt         = NULL
 #ifdef USE_MP3
 	, .id3mapping  = NULL
 #endif
@@ -128,7 +131,8 @@ void parse_cli(int argc, char **argv)
 			exit(EXIT_SUCCESS);
 		case 'f':
 			logmsg(debug, "Output format: %s\n", optarg);
-			ASSIGNFREE(command.fmt, safe_strdup(optarg));
+			list_free(command.fmt, fmt_free);
+			command.fmt = parse_fmt_atoms(optarg);
 			break;
 		case 'l':
 			ASSIGNFREE(command.logfile, resolve_tilde(optarg));
@@ -248,7 +252,8 @@ void parse_config()
 			}
 		} else if (strcmp("format", k) == 0){
 			logmsg(debug, "Set output format to: %s\n", v);
-			ASSIGNFREE(command.fmt, safe_strdup(v));
+			list_free(command.fmt, fmt_free);
+			command.fmt = parse_fmt_atoms(v);
 		} else {
 			logmsg(warn, "Unknown config line: %s\n", k);
 		}
@@ -262,6 +267,7 @@ void free_config()
 {
 	safe_free(3, command.database, command.libraryroot, command.config);
 	exclude_free();
+	list_free(command.fmt, fmt_free);
 
 #ifdef USE_MP3
 	id3map_free();

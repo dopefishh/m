@@ -12,4 +12,5 @@ void file_tag_init(struct db_file *f, uint64_t numtags);
 void file_tag_insert(struct db_file *f, struct db_tag tag);
 bool file_tag_split_eq(char *k, char **key, char **value);
 
+char *file_tag_find(struct db_file *f, char *key);
 #endif

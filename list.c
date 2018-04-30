@@ -5,12 +5,12 @@
 #include "list.h"
 #include "util.h"
 
-struct listitem *list_append(struct listitem **head, void *value)
+struct listitem *list_append(struct listitem *head, void *value)
 {
-	if(*head == NULL){
-		return (*head = list_prepend(NULL, value));
+	if(head == NULL){
+		return list_prepend(NULL, value);
 	}
-	struct listitem *r = *head, *p;
+	struct listitem *r = head, *p;
 	do {
 		p = r;
 	} while((r = r->next) != NULL);
@@ -66,13 +66,12 @@ struct listitem *list_delete(struct listitem *head, uint32_t index, void **item)
 	return head;
 }
 
-void *list_iterate(struct listitem *head, void *st, void *(*stf)(void *, void *))
+void list_iterate(struct listitem *head, void (*stf)(void *))
 {
 	while(head != NULL){
-		st = stf(st, head->value);
+		stf(head->value);
 		head = head->next;
 	}
-	return st;
 }
 
 void list_free(struct listitem *head, void(*myfree)(void *))

@@ -2,6 +2,7 @@
 #define FORMAT_H
 
 #include "list.h"
+#include "db.h"
 
 enum fmt_atom_type {fmt_lit, fmt_tag};
 union fmt_atom_data {
@@ -14,6 +15,8 @@ struct fmt_atom {
 };
 
 struct listitem *parse_fmt_atoms(char *);
-char *format(struct listitem *, struct db_file *);
+void fformat(FILE *, struct listitem *, struct db_file *);
+
+void fmt_free(void *);
 
 #endif

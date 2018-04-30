@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "list.h"
+
 #define ASSIGNFREE(a, v) {free(a); a = v;}
 
 enum command {c_print,c_update,c_search};
@@ -13,7 +15,7 @@ struct mcommand {
 	char *config;
 	char *libraryroot;
 	char *logfile;
-	char *fmt;
+	struct listitem *fmt;
 #ifdef USE_MP3
 	char *id3mapping;
 #endif
@@ -34,6 +36,5 @@ void usage(char *cmd, FILE *out, char *arg0);
 void parse_config();
 void parse_cli(int argc, char **argv);
 void free_config();
-
 
 #endif

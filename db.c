@@ -5,6 +5,7 @@
 #include <sys/types.h>
 
 #include "log.h"
+#include "format.h"
 #include "exclude.h"
 #include "config.h"
 #include "parse.h"
@@ -276,12 +277,10 @@ void print_db_entry(int indent, struct db_entry *e, FILE *f)
 			continue;
 		for(int j = 0; j<indent+1; j++)
 			safe_fputs("  ", f);
-		safe_fprintf(f, "| %s", e->files[i].path);
-		if(e->files[i].tags != NULL)
-			safe_fprintf(f,
-				" with %lu tags\n", e->files[i].ntags);
-		else
-			safe_fputs("\n", f);
+		safe_fprintf(f, "| %s: ", e->files[i].path);
+		safe_fprintf(f, "'");
+		fformat(f, command.fmt, &e->files[i]);
+		safe_fprintf(f, "'");
 	}
 
 }
