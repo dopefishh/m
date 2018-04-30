@@ -11,7 +11,15 @@ exclude = *Giant*
 searchkeys = ARTIST,ALBUM
 
 # Print format
-format = ${artist} - ${title}
+# Escaping can be done with \. E.g. \$ prints a literal $
+# ${tagname} can be used to substitute the specifier with the tag.
+# $fun{arg1, ...} is used to do some simple processing with functions.
+# All other text is interpreted as literal strings.
+#
+# Available functions:
+# - fallback{t1, t2, ...}
+#   Outputs first t1, if it doesn't exist t2, etc.
+format = $fallback{albumartist,artist} - ${title}
 
 # ID3 mapping, only applicable if mp3 support is enabled
 # This is a comma separated list containing key:value pairs.

@@ -4,13 +4,17 @@
 #include "list.h"
 #include "db.h"
 
-enum fmt_atom_type {fmt_lit, fmt_tag};
-union fmt_atom_data {
-	char *lit;
-	char *tag;
-};
+enum fmt_fun_type {fmt_fun_tag, fmt_fun_fallback};
+enum fmt_atom_type {fmt_lit, fmt_fun};
+
 struct fmt_atom {
-	union fmt_atom_data atom;
+	union {
+		char *lit;
+		struct {
+			enum fmt_fun_type type;
+			struct listitem *args;
+		} fun;
+	} atom;
 	enum fmt_atom_type which;
 };
 
