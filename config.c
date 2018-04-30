@@ -39,6 +39,7 @@ static struct option lopts[] =
 	{"libraryroot", no_argument,       0, 'r'},
 	{"db",          required_argument, 0, 'd'},
 	{"exclude",     required_argument, 0, 'e'},
+	{"format",      required_argument, 0, 'f'},
 #ifdef USE_MP3
 	{"id3map",      required_argument, 0, '3'},
 #endif
@@ -46,16 +47,17 @@ static struct option lopts[] =
 };
 
 static const char *optstring = \
-	"+"    \
-	"c:"   \
-	"d:"   \
-	"h::"  \
-	"l:"   \
-	"r:"   \
-	"s"    \
-	"v"    \
-	"V"    \
-	"3:"   \
+	"+"   \
+	"c:"  \
+	"d:"  \
+	"h::" \
+	"f:"  \
+	"l:"  \
+	"r:"  \
+	"s"   \
+	"v"   \
+	"V"   \
+	"3:"  \
 	"e:";
 
 void version(FILE *out)
@@ -81,6 +83,7 @@ void usage(char *cmd, FILE *out, char *arg0)
 			"  -d,--db          FILE   Use the specified database\n"
 			"  -r,--libraryroot FILE   User FILE as the database root\n\n"
 			"  -e,--exclude     GLOB   Add GLOB to the exclusion list\n"
+			"  -f,--format      FMT    Format the output with FMT\n"
 #ifdef USE_MP3
 			"\n"
 			"MP3 specific options\n"
@@ -123,6 +126,10 @@ void parse_cli(int argc, char **argv)
 			printf("optarg: %s\n", optarg);
 			usage(optarg, stdout, argv[0]);
 			exit(EXIT_SUCCESS);
+		case 'f':
+			logmsg(debug, "Output format: %s\n", optarg);
+			ASSIGNFREE(command.fmt, safe_strdup(optarg));
+			break;
 		case 'l':
 			ASSIGNFREE(command.logfile, resolve_tilde(optarg));
 			logmsg(debug, "Log output set to: %s\n", optarg);
@@ -239,6 +246,9 @@ void parse_config()
 				search_key_add(safe_strdup(trim(tok)));
 				tok = strtok(NULL, ",");
 			}
+		} else if (strcmp("format", k) == 0){
+			logmsg(debug, "Set output format to: %s\n", v);
+			ASSIGNFREE(command.fmt, safe_strdup(v));
 		} else {
 			logmsg(warn, "Unknown config line: %s\n", k);
 		}

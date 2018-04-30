@@ -87,6 +87,14 @@ char *safe_strdup(const char *s)
 	return r;
 }
 
+char *safe_strndup(const char *s, size_t n)
+{
+	char *r = strndup(s, n);
+	if (r == NULL)
+		perrordie("strndup");
+	return r;
+}
+
 char *trim(char *s)
 {
 	while(isspace(s[0]))

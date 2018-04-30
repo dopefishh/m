@@ -25,6 +25,7 @@ void safe_free(int count, ...);
 // String
 char *safe_strcat(int count, ...);
 char *safe_strdup(const char *s);
+char *safe_strndup(const char *s, size_t n);
 char *trim(char *s);
 char *rtrimc(char *s, char c);
 

@@ -5,16 +5,17 @@
 #include "list.h"
 #include "util.h"
 
-struct listitem *list_append(struct listitem *head, void *value)
+struct listitem *list_append(struct listitem **head, void *value)
 {
-	if(head == NULL)
-		return list_prepend(NULL, value);
-	struct listitem *r = head, *p;
+	if(*head == NULL){
+		return (*head = list_prepend(NULL, value));
+	}
+	struct listitem *r = *head, *p;
 	do {
 		p = r;
 	} while((r = r->next) != NULL);
 	p->next = list_prepend(NULL, value);
-	return head;
+	return p->next;
 }
 
 struct listitem *list_prepend(struct listitem *head, void *value)

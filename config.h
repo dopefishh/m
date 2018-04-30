@@ -13,6 +13,7 @@ struct mcommand {
 	char *config;
 	char *libraryroot;
 	char *logfile;
+	char *fmt;
 #ifdef USE_MP3
 	char *id3mapping;
 #endif

@@ -10,7 +10,7 @@ struct listitem {
 };
 
 struct listitem *list_prepend(struct listitem *, void *);
-struct listitem *list_append(struct listitem *, void *);
+struct listitem *list_append(struct listitem **head, void *);
 void *list_find(struct listitem *, bool(*)(void *), uint32_t *);
 struct listitem *list_delete(struct listitem *, uint32_t, void **);
 void *list_iterate(struct listitem *, void *, void *(*)(void *, void *));

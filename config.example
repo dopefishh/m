@@ -10,6 +10,9 @@ exclude = *Giant*
 # Search keys to use when searching, only these tags wil be searched
 searchkeys = ARTIST,ALBUM
 
+# Print format
+format = ${artist} - ${title}
+
 # ID3 mapping, only applicable if mp3 support is enabled
 # This is a comma separated list containing key:value pairs.
 # User tags (TXXX) are assumed to be a list of two items, the first being the

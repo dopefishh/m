@@ -1,7 +1,6 @@
 SHELL = /bin/sh
 include conf.mk
 
-
 CFLAGS?=-Wall -Wpedantic -Wextra -Werror -D_DEFAULT_SOURCE
 LDFLAGS?=
 
