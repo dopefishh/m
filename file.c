@@ -72,7 +72,7 @@ void free_file(struct db_file f)
 	if(f.tags != NULL){
 		for(uint64_t i = 0; i<f.ntags; i++)
 			safe_free(2, f.tags[i].value, f.tags[i].key);
-		safe_free(2, f.tags);
+		free(f.tags);
 	}
 	free(f.path);
 }
