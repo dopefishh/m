@@ -6,15 +6,18 @@
 #include "log.h"
 
 #include "format/format.tab.h"
-
-#define fmt_die(s) {                          \
-	logmsg(warn, "fmt_parsing: " s "\n"); \
-	list_free(head, fmt_free);            \
-	return NULL;                          \
-	}
+typedef struct yy_buffer_state * YY_BUFFER_STATE;
+extern YY_BUFFER_STATE formatyy_scan_string(char * str);
+extern int formatyyparse(void);
+extern void formatyy_delete_buffer(YY_BUFFER_STATE buffer);
 
 struct listitem *parse_fmt_atoms(char *fmt)
 {
+	YY_BUFFER_STATE buffer = formatyy_scan_string(fmt);
+	int res = formatyyparse();
+	formatyy_delete_buffer(buffer);
+	logmsg(debug, "yyparse_res: %d\n", res);
+
 	(void)fmt;
 	return NULL;
 //	logmsg(debug, "parsing fmt atoms: %s\n", fmt);

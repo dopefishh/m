@@ -1,7 +1,7 @@
 SHELL = /bin/sh
 include conf.mk
 
-CFLAGS?=-Wall -Wpedantic -Wextra -Werror -D_DEFAULT_SOURCE
+CFLAGS?=-Wall -Wpedantic -Wextra -D_DEFAULT_SOURCE
 LDFLAGS?=
 
 ifdef DEBUG
@@ -12,9 +12,9 @@ endif
 
 VERSION:=0.1
 PROGRAM:=m
-PARSERS:=format/format.o
+PARSERS:=format/format.a
 OBJS:=$(patsubst %.h,%.o,\
-		$(wildcard *.h) \
+		$(wildcard *.h)\
 		$(wildcard config/*.h)\
 	)
 
@@ -44,17 +44,17 @@ endif
 
 all: $(PROGRAM)
 
-$(PROGRAM): $(OBJS)
-	$(LINK.c) $(LDLIBS) $^ $(OUTPUT_OPTION)
+$(PROGRAM): $(PARSERS) $(OBJS)
+	$(LINK.c) $(LDLIBS) $(OBJS) $(PARSERS) $(OUTPUT_OPTION)
 
-%.o: %.tab.c %.yy.c
-	$(COMPILE.c) $(OUTPUT_OPTION) $^
+%.a: %.tab.o %.yy.o
+	$(AR) cr $@ $^
 
 %.tab.c: %.y
-	$(YACC.y) -b $(basename $<) -d $<
+	$(YACC.y) -b $(basename $<) -d -Dapi.prefix=$(notdir $(basename $<))yy $<
 
 %.yy.c: %.l
-	$(LEX) $(OUTPUT_OPTION) $<
+	$(LEX) -P $(notdir $(basename $<))yy $(OUTPUT_OPTION) $<
 
 %.1.gz: %
 	help2man -n m -s 1 -m User\ Commands ./$< | gzip -9 > $@
@@ -87,4 +87,4 @@ distclean: clean
 	$(RM) $(PROGRAM)-$(VERSION).tar.gz
 
 clean:
-	$(RM) $(PARSERS:%.o=%.yy.[hc]) $(PARSERS:%.o=%.tab.[hc]) $(OBJS) $(PROGRAM) $(PROGRAM).1.gz
+	$(RM) $(PARSERS:%.a=%.tab.[och]) $(PARSERS:%.a=%.yy.[och]) $(OBJS) $(PROGRAM) $(PROGRAM).1.gz

@@ -1,3 +1,3 @@
 #include "../util.h"
 
-#define YYSTYPE char *
+#define FORMATYYSTYPE char *

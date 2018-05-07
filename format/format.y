@@ -1,14 +1,14 @@
 %{
 #include "format.h"
 
-int yydebug=0;
+int formatyydebug=0;
 
-void yyerror(const char *str)
+void formatyyerror(const char *str)
 {
 	die(str);
 }
 
-int yywrap()
+int formatyywrap()
 {
 	return 1;
 }
