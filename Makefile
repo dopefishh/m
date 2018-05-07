@@ -12,10 +12,11 @@ endif
 
 VERSION:=0.1
 PROGRAM:=m
+PARSERS:=format/format.o
 OBJS:=$(patsubst %.h,%.o,\
 		$(wildcard *.h) \
 		$(wildcard config/*.h)\
-	) format/format.o
+	)
 
 ifdef USE_FLAC
 CFLAGS+=-DUSE_FLAC $(shell pkg-config --cflags flac)
@@ -55,7 +56,6 @@ $(PROGRAM): $(OBJS)
 %.yy.c: %.l
 	$(LEX) $(OUTPUT_OPTION) $<
 
-
 %.1.gz: %
 	help2man -n m -s 1 -m User\ Commands ./$< | gzip -9 > $@
 
@@ -87,4 +87,4 @@ distclean: clean
 	$(RM) $(PROGRAM)-$(VERSION).tar.gz
 
 clean:
-	$(RM) $(OBJS) $(PROGRAM) $(PROGRAM).1.gz
+	$(RM) $(PARSERS:%.o=%.yy.[hc]) $(PARSERS:%.o=%.tab.[hc]) $(OBJS) $(PROGRAM) $(PROGRAM).1.gz
