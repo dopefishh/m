@@ -15,7 +15,7 @@ PROGRAM:=m
 OBJS:=$(patsubst %.h,%.o,\
 		$(wildcard *.h) \
 		$(wildcard config/*.h)\
-	)
+	) format/format.o
 
 ifdef USE_FLAC
 CFLAGS+=-DUSE_FLAC $(shell pkg-config --cflags flac)
@@ -45,6 +45,16 @@ all: $(PROGRAM)
 
 $(PROGRAM): $(OBJS)
 	$(LINK.c) $(LDLIBS) $^ $(OUTPUT_OPTION)
+
+%.o: %.tab.c %.yy.c
+	$(COMPILE.c) $(OUTPUT_OPTION) $^
+
+%.tab.c: %.y
+	$(YACC.y) -b $(basename $<) -d $<
+
+%.yy.c: %.l
+	$(LEX) $(OUTPUT_OPTION) $<
+
 
 %.1.gz: %
 	help2man -n m -s 1 -m User\ Commands ./$< | gzip -9 > $@

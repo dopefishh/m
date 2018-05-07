@@ -18,7 +18,7 @@ void perrordie(char *prg)
 	die("Aborting\n");
 }
 
-void die(char *msg, ...)
+void die(const char *msg, ...)
 {
 	va_list ap;
 	va_start(ap, msg);

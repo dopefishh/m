@@ -14,7 +14,7 @@
 
 // Dying
 void perrordie(char *prg);
-void die(char *msg, ...);
+void die(const char *msg, ...);
 
 // Allocation
 void *safe_malloc(size_t s);
