@@ -22,6 +22,6 @@ struct fmt_atom {
 struct listitem *parse_fmt_atoms(char *);
 void fformat(FILE *, struct listitem *, struct db_file *);
 
-void fmt_free(void *);
+void fmt_free(struct listitem *);
 
 #endif

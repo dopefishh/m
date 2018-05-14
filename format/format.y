@@ -22,34 +22,32 @@ int formatyywrap()
 %%
 
 atoms	:
-			{
-				$$ = NULL;
-			}
+			{ $$ = NULL; }
 		| atoms atom
 			{
+				printf("atoms: %p\n", $1);
 				struct listitem *tail = list_append($1, $2);
-				if($1 == NULL)
-					$$ = tail;
-				else
-					$$ = $1;
-				fmt_list = $1;
+				$$ = $1 == NULL ? tail : $1;
+				fmt_list = $$;
+				printf("tail: %p\n", tail);
+				printf("lenatoms: %llu\n", list_length($$));
 			}
 		;
 atom	: DOLLAR LITERAL OBRACE args CBRACE
 			{
-				printf("fun: %s\n", (char *)$1);
+				printf("fun\n");
 				struct fmt_atom *current = safe_malloc(sizeof (struct fmt_atom));
 				current->islit = false;
-				current->atom.fun.name = safe_strdup((char *)$2);
+				current->atom.fun.name = (char *)$2;
 				current->atom.fun.args = $4;
 				$$ = current;
 			}
 		| LITERAL
 			{
-				printf("lit: %s\n", (char *)$1);
+				printf("lit\n");
 				struct fmt_atom *current = safe_malloc(sizeof (struct fmt_atom));
 				current->islit = true;
-				current->atom.lit = safe_strdup((char *)$1);
+				current->atom.lit = (char *)$1;
 				$$ = current;
 			}
 		;
@@ -58,11 +56,9 @@ args	:
 		| nargs
 			{ $$ = $1; }
 nargs	: atom
-			{
-				$$ = list_append(NULL, $1);
-			}
+			{ $$ = list_append(NULL, $1); }
 		| nargs COMMA atom
 			{
-				list_append($1, list_append(NULL, $3));
+				list_append($1, $3);
 				$$ = $1;
 			}

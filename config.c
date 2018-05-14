@@ -131,7 +131,7 @@ void parse_cli(int argc, char **argv)
 			exit(EXIT_SUCCESS);
 		case 'f':
 			logmsg(debug, "Output format: %s\n", optarg);
-			list_free(command.fmt, fmt_free);
+			fmt_free(command.fmt);
 			command.fmt = parse_fmt_atoms(optarg);
 			break;
 		case 'l':
@@ -252,7 +252,7 @@ void parse_config()
 			}
 		} else if (strcmp("format", k) == 0){
 			logmsg(debug, "Set output format to: %s\n", v);
-			list_free(command.fmt, fmt_free);
+			fmt_free(command.fmt);
 			command.fmt = parse_fmt_atoms(v);
 		} else {
 			logmsg(warn, "Unknown config line: %s\n", k);
@@ -267,7 +267,7 @@ void free_config()
 {
 	safe_free(3, command.database, command.libraryroot, command.config);
 	exclude_free();
-	list_free(command.fmt, fmt_free);
+	fmt_free(command.fmt);
 
 #ifdef USE_MP3
 	id3map_free();

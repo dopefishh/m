@@ -6,7 +6,8 @@
 #include "log.h"
 
 #include "format/format.tab.h"
-typedef struct yy_buffer_state * YY_BUFFER_STATE;
+
+typedef struct yy_buffer_state *YY_BUFFER_STATE;
 extern YY_BUFFER_STATE formatyy_scan_string(char * str);
 extern int formatyyparse(void);
 extern void formatyy_delete_buffer(YY_BUFFER_STATE buffer);
@@ -14,132 +15,91 @@ extern void formatyy_delete_buffer(YY_BUFFER_STATE buffer);
 //Global variable
 struct listitem *fmt_list = NULL;
 
-void fmt_atom_print(void *aa)
-{
-	struct fmt_atom *a = (struct fmt_atom *)aa;
-	if(a == NULL) {
-		printf("NULL\n");
-	} else if (a->islit){
-		printf("%s", a->atom.lit);
-	} else {
-		printf("$%s{", a->atom.fun.name);
-		list_iterate(a->atom.fun.args, &fmt_atom_print);
-		printf("}");
-	}
-}
-
 struct listitem *parse_fmt_atoms(char *fmt)
 {
 	YY_BUFFER_STATE buffer = formatyy_scan_string(fmt);
 	int res = formatyyparse();
 	formatyy_delete_buffer(buffer);
-	logmsg(debug, "yyparse_res: %d, %p\n", res, fmt_list);
+	if(res != 0) {
+		die("fmt parsing error: %d\n");
+	}
 
-	list_iterate(fmt_list, &fmt_atom_print);
-	printf("\n");
-
-	(void)fmt;
 	return fmt_list;
-//	logmsg(debug, "parsing fmt atoms: %s\n", fmt);
-//	struct listitem *head = NULL, *current = NULL;
-//
-//	char *c;
-//	while(*fmt != '\0'){
-//		//We look until we find a dollar or null byte
-//		c = upto(fmt, '$');
-//
-//		if(c > fmt){
-//			struct fmt_atom *atom =
-//				safe_malloc(sizeof(struct fmt_atom));
-//			atom->which = fmt_lit;
-//			atom->atom.lit = strndup(fmt, c - fmt);
-//			current = list_append(current, atom);
-//			if(head == NULL){
-//				head = current;
-//			}
-//		}
-//		if (*c == '$'){
-//			c++;
-//			//Not ${..} 
-//#define fun(s) strncmp(s, c, strlen(s)) == 0
-//			if(fun("fallback")){
-//				//TODO
-//			} else if(fun("tag")){
-//			} else if(*c == '{'){
-//
-//			} else {
-//				fmt_die("$ not followed by { or a function");
-//			}
-////
-////			char *end = upto(++c, '}');
-////			if(end == '\0')
-////				fmt_die("${ not terminated with }");
-////			struct fmt_atom *atom =
-////				safe_malloc(sizeof(struct fmt_atom));
-////			atom->which = fmt_tag;
-////			atom->atom.tag = strndup(c+1, end-c - 1);
-////			current = list_append(current, atom);
-////			if(head == NULL){
-////				head = current;
-////			}
-////			c = end+1;
-//		} else {
-//		}
-//		fmt = c;
-//	}
-//	return head;
 }
 
-
-void fmt_free(void *vfmt)
+void fmt_atom_free(void *vfmt)
 {
-	free(vfmt);
-//	struct fmt_atom *fmt = (struct fmt_atom *)vfmt;
-//	switch(fmt->which){
-//	case fmt_lit:
-//		free(fmt->atom.lit);
-//		break;
-//	case fmt_fun:
-//		//TODO
-////		free(fmt->atom.tag);
-//		break;
-//	}
-//	free(fmt);
+	struct fmt_atom *fmt = (struct fmt_atom *)vfmt;
+	if(fmt->islit){
+		free(fmt->atom.lit);
+	} else {
+		free(fmt->atom.fun.name);
+		list_free(fmt->atom.fun.args, &fmt_atom_free);
+	}
+	free(fmt);
+}
+
+void fmt_free(struct listitem * fmt)
+{
+	list_free(fmt, &fmt_atom_free);
 }
 
 FILE *gof;
 struct db_file *gdf;
-void format(void *i)
+void rewrite(void *i)
 {
-	(void)i;
-//	struct fmt_atom *item = (struct fmt_atom *)i;
-//	char *t;
-//	switch(item->which){
-//	case fmt_lit:
-//		safe_fprintf(gof, "%s", item->atom.lit);
-//		break;
-//	case fmt_fun:
-//		switch(item->atom.fun.type){
-//		case fmt_fun_tag:
-//			t = file_tag_find(gdf, item->atom.tag);
-//			if(t != NULL)
-//				safe_fprintf(gof, "%s", t);
-//			//TODO
-//			break;
-//		case fmt_fun_fallback:
-//			//TODO
-//			break;
-//		}
-//		break;
-//	}
+	struct fmt_atom *item = (struct fmt_atom *)i;
+	//Recursive rewriting
+	//Done rewriting
+	if(!item->islit){
+		item->islit = true;
+		char *funname = item->atom.fun.name;
+		struct listitem *funargs = item->atom.fun.args;
+
+		//Rewrite
+		if(strcmp(item->atom.fun.name, "tag") == 0){
+			logmsg(debug, "tag with %llu args\n", list_length(item->atom.fun.args));
+			struct fmt_atom *a = (struct fmt_atom *)item->atom.fun.args->value;
+			while(!a->islit)
+				rewrite(a);
+			logmsg(debug, "find %s tag\n", a->atom.lit);
+			char *tag = file_tag_find(gdf, a->atom.lit);
+			if(tag == NULL) {
+				logmsg(warn, "Couldn't find tag %s\n", a->atom.lit);
+				tag = "";
+			}
+			item->atom.lit = safe_strdup(tag);
+		} else if(strcmp(item->atom.fun.name, "i") == 0){
+			struct fmt_atom *a = (struct fmt_atom *)item->atom.fun.args->value;
+			while(!a->islit)
+				rewrite(a);
+			item->atom.lit = safe_strdup(a->atom.lit);
+		} else {
+			die("Unknown format function: %s\n", funname);
+		}
+
+		free(funname);
+		list_free(funargs, &fmt_atom_free);
+	}
+}
+
+void print(void *i)
+{
+	struct fmt_atom *item = (struct fmt_atom *)i;
+	if(item->islit){
+		safe_fprintf(gof, "%s", item->atom.lit);
+	} else {
+		die("Huh, rewriting didn't succeed?\n");
+	}
 }
 
 void fformat(FILE *f, struct listitem *l, struct db_file *df)
 {
 	gof = f;
 	gdf = df;
-	list_iterate(l, format);
-	safe_fprintf(f, "\n");
+	list_iterate(l, rewrite);
+	list_iterate(l, print);
+	safe_fprintf(gof, "\n");
 	gof = NULL;
 	gdf = NULL;
 }

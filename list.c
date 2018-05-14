@@ -66,6 +66,16 @@ struct listitem *list_delete(struct listitem *head, uint32_t index, void **item)
 	return head;
 }
 
+size_t list_length(struct listitem *head)
+{
+	size_t r = 0;
+	while(head != NULL){
+		head = head->next;
+		r++;
+	}
+	return r;
+}
+
 void list_iterate(struct listitem *head, void (*stf)(void *))
 {
 	while(head != NULL){

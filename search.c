@@ -3,6 +3,7 @@
 #include "db.h"
 #include "log.h"
 #include "list.h"
+#include "format.h"
 
 static struct listitem *head = NULL;
 
@@ -54,8 +55,8 @@ void search_db(struct db * db)
 
 	//Print
 	for(struct listitem *i = result; i != NULL; i = i->next){
-		struct db_file *f = (struct db_file *)(i->value);
-		printf("%s\n", f->path);
+		struct db_file *f = (struct db_file *)i->value;
+		fformat(stdout, command.fmt, f);
 	}
 
 	//Free
