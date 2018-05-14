@@ -1,3 +1,5 @@
+%option noinput
+%option nounput
 %{
 
 #include "format.h"
@@ -7,10 +9,10 @@
 
 %%
 
-\$		return DOLLAR;
-\{		return OBRACE;
-\}		return CBRACE;
-,		return COMMA;
-[^${}]*	formatyylval = safe_strdup(yytext); return LITERAL;
+,        return COMMA;
+\$       return DOLLAR;
+\{       return OBRACE;
+\}       return CBRACE;
+[^,${}]+ formatyylval = safe_strdup(yytext); return LITERAL;
 
 %%

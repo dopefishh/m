@@ -11,15 +11,35 @@ extern YY_BUFFER_STATE formatyy_scan_string(char * str);
 extern int formatyyparse(void);
 extern void formatyy_delete_buffer(YY_BUFFER_STATE buffer);
 
+//Global variable
+struct listitem *fmt_list = NULL;
+
+void fmt_atom_print(void *aa)
+{
+	struct fmt_atom *a = (struct fmt_atom *)aa;
+	if(a == NULL) {
+		printf("NULL\n");
+	} else if (a->islit){
+		printf("%s", a->atom.lit);
+	} else {
+		printf("$%s{", a->atom.fun.name);
+		list_iterate(a->atom.fun.args, &fmt_atom_print);
+		printf("}");
+	}
+}
+
 struct listitem *parse_fmt_atoms(char *fmt)
 {
 	YY_BUFFER_STATE buffer = formatyy_scan_string(fmt);
 	int res = formatyyparse();
 	formatyy_delete_buffer(buffer);
-	logmsg(debug, "yyparse_res: %d\n", res);
+	logmsg(debug, "yyparse_res: %d, %p\n", res, fmt_list);
+
+	list_iterate(fmt_list, &fmt_atom_print);
+	printf("\n");
 
 	(void)fmt;
-	return NULL;
+	return fmt_list;
 //	logmsg(debug, "parsing fmt atoms: %s\n", fmt);
 //	struct listitem *head = NULL, *current = NULL;
 //

@@ -1,6 +1,8 @@
 %{
 #include "format.h"
 
+extern struct listitem *fmt_list;
+
 int formatyydebug=1;
 
 void formatyyerror(const char *str)
@@ -20,32 +22,47 @@ int formatyywrap()
 %%
 
 atoms	:
+			{
+				$$ = NULL;
+			}
 		| atoms atom
+			{
+				struct listitem *tail = list_append($1, $2);
+				if($1 == NULL)
+					$$ = tail;
+				else
+					$$ = $1;
+				fmt_list = $1;
+			}
 		;
-
-atom	: fun
+atom	: DOLLAR LITERAL OBRACE args CBRACE
+			{
+				printf("fun: %s\n", (char *)$1);
+				struct fmt_atom *current = safe_malloc(sizeof (struct fmt_atom));
+				current->islit = false;
+				current->atom.fun.name = safe_strdup((char *)$2);
+				current->atom.fun.args = $4;
+				$$ = current;
+			}
 		| LITERAL
 			{
-				printf("lit: %s\n", $1);
-			}
-		;
-
-fun		: DOLLAR OBRACE LITERAL CBRACE
-			{
-				printf("tag: '%s'\n", $3);
-			}
-		| DOLLAR LITERAL OBRACE args CBRACE
-			{
-				printf("fun: '%s'\n", $2);
+				printf("lit: %s\n", (char *)$1);
+				struct fmt_atom *current = safe_malloc(sizeof (struct fmt_atom));
+				current->islit = true;
+				current->atom.lit = safe_strdup((char *)$1);
+				$$ = current;
 			}
 		;
 args	:
+			{ $$ = NULL; }
 		| nargs
-nargs	: LITERAL
+			{ $$ = $1; }
+nargs	: atom
 			{
-				printf("arg: '%s'\n", $1);
+				$$ = list_append(NULL, $1);
 			}
-		| nargs COMMA LITERAL
+		| nargs COMMA atom
 			{
-				printf("arg: '%s'\n", $3);
+				list_append($1, list_append(NULL, $3));
+				$$ = $1;
 			}

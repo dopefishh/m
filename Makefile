@@ -6,7 +6,7 @@ LDFLAGS?=
 
 ifdef DEBUG
 CFLAGS+=-g
-YFLAGS+=-t -Dparse.trace
+YFLAGS+=-t
 else
 CFLAGS+=-O3
 endif
@@ -55,7 +55,7 @@ $(PROGRAM): $(PARSERS) $(OBJS)
 	$(AR) cr $@ $^
 
 %.tab.c %.tab.h: %.y
-	$(YACC.y) -b $(basename $<) -d -Dapi.prefix=$(notdir $(basename $<))yy $<
+	$(YACC.y) -b $(basename $<) -d -Dapi.prefix={$(notdir $(basename $<))yy} $<
 
 %.yy.c: %.l
 	$(LEX) -P $(notdir $(basename $<))yy $(OUTPUT_OPTION) $<

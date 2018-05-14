@@ -19,7 +19,8 @@ searchkeys = ARTIST,ALBUM
 # Available functions:
 # - fallback{t1, t2, ...}
 #   Outputs first t1, if it doesn't exist t2, etc.
-format = $fallback{albumartist,artist} - ${title}
+#format = $fallback{$tag{albumartist}, $tag{artist}} - $tag{title}
+format = $somefun{bork,bork} literal
 
 # ID3 mapping, only applicable if mp3 support is enabled
 # This is a comma separated list containing key:value pairs.
