@@ -44,6 +44,10 @@ void fmt_free(struct listitem * fmt)
 	list_free(fmt, &fmt_atom_free);
 }
 
+#define FMT_FUN(item, name, args)\
+	if(strcmp(item->atom.fun.name, name) == 0){\
+	}
+
 FILE *gof;
 struct db_file *gdf;
 void rewrite(void *i)
@@ -58,7 +62,9 @@ void rewrite(void *i)
 
 		//Rewrite
 		if(strcmp(item->atom.fun.name, "tag") == 0){
-			logmsg(debug, "tag with %llu args\n", list_length(item->atom.fun.args));
+			if(list_length(item->atom.fun.args) != 1){
+				die("tag requires 1 arguments\n");
+			}
 			struct fmt_atom *a = (struct fmt_atom *)item->atom.fun.args->value;
 			while(!a->islit)
 				rewrite(a);
@@ -70,10 +76,22 @@ void rewrite(void *i)
 			}
 			item->atom.lit = safe_strdup(tag);
 		} else if(strcmp(item->atom.fun.name, "i") == 0){
+			if(list_length(item->atom.fun.args) != 1){
+				die("i requires 1 arguments\n");
+			}
 			struct fmt_atom *a = (struct fmt_atom *)item->atom.fun.args->value;
 			while(!a->islit)
 				rewrite(a);
 			item->atom.lit = safe_strdup(a->atom.lit);
+		} else if(strcmp(item->atom.fun.name, "k") == 0){
+			if(list_length(item->atom.fun.args) != 1){
+				die("k requires 2 arguments\n");
+			}
+			logmsg(debug, "k called with %llu args\n", list_length(item->atom.fun.args));
+			struct fmt_atom *a2 = item->atom.fun.args->next->value;
+			while(!a2->islit)
+				rewrite(a2);
+			item->atom.lit = safe_strdup(a2->atom.lit);
 		} else {
 			die("Unknown format function: %s\n", funname);
 		}

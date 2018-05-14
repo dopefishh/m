@@ -25,17 +25,13 @@ atoms	:
 			{ $$ = NULL; }
 		| atoms atom
 			{
-				printf("atoms: %p\n", $1);
 				struct listitem *tail = list_append($1, $2);
 				$$ = $1 == NULL ? tail : $1;
 				fmt_list = $$;
-				printf("tail: %p\n", tail);
-				printf("lenatoms: %llu\n", list_length($$));
 			}
 		;
 atom	: DOLLAR LITERAL OBRACE args CBRACE
 			{
-				printf("fun\n");
 				struct fmt_atom *current = safe_malloc(sizeof (struct fmt_atom));
 				current->islit = false;
 				current->atom.fun.name = (char *)$2;
@@ -44,7 +40,6 @@ atom	: DOLLAR LITERAL OBRACE args CBRACE
 			}
 		| LITERAL
 			{
-				printf("lit\n");
 				struct fmt_atom *current = safe_malloc(sizeof (struct fmt_atom));
 				current->islit = true;
 				current->atom.lit = (char *)$1;
