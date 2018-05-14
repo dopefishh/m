@@ -6,12 +6,14 @@ LDFLAGS?=
 
 ifdef DEBUG
 CFLAGS+=-g
+YFLAGS+=-t -Dparse.trace
 else
 CFLAGS+=-O3
 endif
 
 VERSION:=0.1
 PROGRAM:=m
+
 PARSERS:=format/format.a
 OBJS:=$(patsubst %.h,%.o,\
 		$(wildcard *.h)\
@@ -44,13 +46,15 @@ endif
 
 all: $(PROGRAM)
 
+format.o: format/format.a
+
 $(PROGRAM): $(PARSERS) $(OBJS)
 	$(LINK.c) $(LDLIBS) $(OBJS) $(PARSERS) $(OUTPUT_OPTION)
 
 %.a: %.tab.o %.yy.o
 	$(AR) cr $@ $^
 
-%.tab.c: %.y
+%.tab.c %.tab.h: %.y
 	$(YACC.y) -b $(basename $<) -d -Dapi.prefix=$(notdir $(basename $<))yy $<
 
 %.yy.c: %.l
@@ -87,4 +91,4 @@ distclean: clean
 	$(RM) $(PROGRAM)-$(VERSION).tar.gz
 
 clean:
-	$(RM) $(PARSERS:%.a=%.tab.[och]) $(PARSERS:%.a=%.yy.[och]) $(OBJS) $(PROGRAM) $(PROGRAM).1.gz
+	$(RM) $(PARSERS) $(PARSERS:%.a=%.tab.[och]) $(PARSERS:%.a=%.yy.[och]) $(OBJS) $(PROGRAM) $(PROGRAM).1.gz

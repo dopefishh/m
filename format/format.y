@@ -1,11 +1,11 @@
 %{
 #include "format.h"
 
-int formatyydebug=0;
+int formatyydebug=1;
 
 void formatyyerror(const char *str)
 {
-	die(str);
+	logmsg(warn, "fmt error: %s\n", str);
 }
 
 int formatyywrap()
@@ -15,7 +15,7 @@ int formatyywrap()
 
 %}
 
-%token DOLLAR OBRACE CBRACE LITERAL
+%token DOLLAR OBRACE CBRACE LITERAL COMMA
 
 %%
 
@@ -24,13 +24,28 @@ atoms	:
 		;
 
 atom	: fun
-		| literal
-		;
-
-fun		: DOLLAR LITERAL OBRACE atoms CBRACE
-	 		{
-				printf("fun: '%s'\n", $2);
+		| LITERAL
+			{
+				printf("lit: %s\n", $1);
 			}
 		;
 
-literal	: LITERAL
+fun		: DOLLAR OBRACE LITERAL CBRACE
+			{
+				printf("tag: '%s'\n", $3);
+			}
+		| DOLLAR LITERAL OBRACE args CBRACE
+			{
+				printf("fun: '%s'\n", $2);
+			}
+		;
+args	:
+		| nargs
+nargs	: LITERAL
+			{
+				printf("arg: '%s'\n", $1);
+			}
+		| nargs COMMA LITERAL
+			{
+				printf("arg: '%s'\n", $3);
+			}
