@@ -19,7 +19,7 @@ searchkeys = ARTIST,ALBUM
 # Available functions:
 # - fallback{t1, t2, ...}
 #   Outputs first t1, if it doesn't exist t2, etc.
-format = albumartist: $tag{$i{albumartist}}; artist: $tag{$k{artist,artist}}; title: $tag{title}
+format = albumartist: $tag{$i{albumartist}}\, artist: $tag{$k{artist,artist}}\, title: $tag{title}
 #format = $fallback{$tag{albumartist},$tag{artist}} - $tag{title}
 #format = literal - $noargs{} - $onearg{arg1}  - $twoarg{arg1,arg2} - $threearg{arg1,arg2, arg3}\
 #	$nested{$nested{}} - $nested{$nested1{abc}, $nested2{def, geg}}

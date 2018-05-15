@@ -9,10 +9,10 @@
 
 %%
 
-,[ \t]*  return COMMA;
-\$       return DOLLAR;
-\{       return OBRACE;
-\}       return CBRACE;
-[^,${}]+ formatyylval = safe_strdup(yytext); return LITERAL;
+,[ \t]*    return COMMA;
+\$         return DOLLAR;
+\{         return OBRACE;
+\}         return CBRACE;
+(\\[,${}\\]|[^,${}])+   formatyylval = safe_strdup(yytext); return LITERAL;
 
 %%
