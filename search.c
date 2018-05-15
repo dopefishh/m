@@ -21,17 +21,18 @@ struct listitem *search(struct db_entry *db, struct query *q, struct listitem *r
 	//In the files
 	for(uint64_t file = 0; file<db->nfile; file++){
 		struct db_file *f = &(db->files[file]);
-		logmsg(debug, "path: %s\n", f->path);
 		if(f->tags == NULL){
 			logmsg(debug, "skip non music file\n");
 			continue;
 		}
+		logmsg(warn, "search in %s\n", f->path);
 		//For each search key
 		struct listitem *c = head;
 		while(c != NULL){
 			//Find if the tag is there
 			void *res = bsearch(c->value, f->tags, f->ntags,
 				sizeof(struct db_tag), tag_cmp);
+			logmsg(warn, "search for %s=%s in %s\n", c->value, q->query, f->path);
 			if(res != NULL){
 				if(strcmp(((struct db_tag*)res)->value,
 						q->query) == 0){
@@ -48,7 +49,7 @@ struct listitem *search(struct db_entry *db, struct query *q, struct listitem *r
 void search_db(struct db * db)
 {
 	struct query *q = parse_query(command.fields.search_opts.query);
-	logmsg(debug, "Searching for %s\n", command.fields.search_opts.query);
+	logmsg(warn, "Searching for %s\n", command.fields.search_opts.query);
 
 	//Search
 	struct listitem *result = search(db->root, q, NULL);

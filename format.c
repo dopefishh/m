@@ -21,7 +21,7 @@ struct listitem *parse_fmt_atoms(char *fmt)
 	int res = formatyyparse();
 	formatyy_delete_buffer(buffer);
 	if(res != 0) {
-		die("fmt parsing error: %d\n");
+		die("fmt parsing error: %d\n", res);
 	}
 
 	return fmt_list;
@@ -84,7 +84,7 @@ void rewrite(void *i)
 				rewrite(a);
 			item->atom.lit = safe_strdup(a->atom.lit);
 		} else if(strcmp(item->atom.fun.name, "k") == 0){
-			if(list_length(item->atom.fun.args) != 1){
+			if(list_length(item->atom.fun.args) != 2){
 				die("k requires 2 arguments\n");
 			}
 			logmsg(debug, "k called with %llu args\n", list_length(item->atom.fun.args));
