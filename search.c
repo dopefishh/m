@@ -25,15 +25,14 @@ struct listitem *search(struct db_entry *db, struct query *q, struct listitem *r
 			logmsg(debug, "skip non music file\n");
 			continue;
 		}
-		logmsg(warn, "search in %s\n", f->path);
 		//For each search key
 		struct listitem *c = head;
 		while(c != NULL){
 			//Find if the tag is there
 			void *res = bsearch(c->value, f->tags, f->ntags,
 				sizeof(struct db_tag), tag_cmp);
-			logmsg(warn, "search for %s=%s in %s\n", c->value, q->query, f->path);
 			if(res != NULL){
+				logmsg(debug, "search for %s=%s in %s, found %s\n", c->value, q->query, f->path, res);
 				if(strcmp(((struct db_tag*)res)->value,
 						q->query) == 0){
 					rhd = list_prepend(rhd, f);
