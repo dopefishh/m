@@ -40,4 +40,4 @@ USE_OPUS:=yes
 USE_OGG:=yes
 
 # Compile with debugging support
-DEBUG:=yes
+DEBUG:=

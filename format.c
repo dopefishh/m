@@ -21,7 +21,7 @@ struct listitem *parse_fmt_atoms(char *fmt)
 	int res = formatyyparse();
 	formatyy_delete_buffer(buffer);
 	if(res != 0) {
-		die("fmt parsing error: %d\n");
+		die("fmt parsing error: %d\n", res);
 	}
 
 	return fmt_list;

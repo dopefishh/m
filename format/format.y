@@ -42,6 +42,15 @@ atom	: DOLLAR LITERAL OBRACE args CBRACE
 			{
 				struct fmt_atom *current = safe_malloc(sizeof (struct fmt_atom));
 				current->islit = true;
+				char *lit = (char *)$1;
+				char *r = lit;
+				while(*lit != '\0'){
+					if(*lit == '\\' && *(lit+1) != '\0'){
+						lit++;
+					}
+					*r++ = *lit++;
+				}
+				*r = '\0';
 				current->atom.lit = (char *)$1;
 				$$ = current;
 			}
