@@ -13,6 +13,7 @@
 \$       return DOLLAR;
 \{       return OBRACE;
 \}       return CBRACE;
-(\\.|[^,${}])+ formatyylval = safe_strdup(yytext); return LITERAL;
+\\.      formatyylval = safe_strdup(yytext+1); return LITERAL;
+[^,${}]+ formatyylval = safe_strdup(yytext); return LITERAL;
 
 %%
