@@ -80,6 +80,8 @@ void parse_db_file(FILE *f, struct db_file *r)
 	if(r->ntags == 0){
 		logmsg(debug, "Parsed non music db_file\n");
 		return;
+	} else {
+		logmsg(debug, "Going to parse %lu tags\n", r->ntags);
 	}
 	r->tags = safe_malloc(r->ntags*sizeof(struct db_tag));
 	for(uint64_t i = 0; i<r->ntags; i++){

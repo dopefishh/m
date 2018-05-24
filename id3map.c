@@ -68,7 +68,7 @@ void id3map_add(char *id, char *key, char *txxx)
 
 char *id3map_get(char *id, char *txxx)
 {
-	logmsg(debug, "Getting id3map entry for %s\n", id);
+//	logmsg(debug, "Getting id3map entry for %s\n", id);
 	equalid = id;
 	equaltxxx = txxx;
 	struct id3map *r = list_find(head, &id3map_equal, NULL);

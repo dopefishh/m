@@ -15,10 +15,22 @@ VERSION:=0.1
 PROGRAM:=m
 
 PARSERS:=format/format.a
-OBJS:=$(patsubst %.h,%.o,\
-		$(wildcard *.h)\
-		$(wildcard config/*.h)\
-	)
+OBJS:= \
+	config.o \
+	config/print.o \
+	config/search.o \
+	config/update.o \
+	db.o \
+	exclude.o \
+	file.o \
+	format.o \
+	list.o \
+	log.o \
+	m.o \
+	parse.o \
+	search.o \
+	util.o \
+	xdg.o \
 
 ifdef USE_FLAC
 CFLAGS+=-DUSE_FLAC $(shell pkg-config --cflags flac)
@@ -55,10 +67,10 @@ $(PROGRAM): $(PARSERS) $(OBJS)
 	$(AR) cr $@ $^
 
 %.tab.c %.tab.h: %.y
-	$(YACC.y) -b $(basename $<) -d -Dapi.prefix={$(notdir $(basename $<))yy} $<
+	$(YACC.y) -b $* -d -Dapi.prefix={$(notdir $*)yy} $<
 
 %.yy.c: %.l
-	$(LEX) -P $(notdir $(basename $<))yy $(OUTPUT_OPTION) $<
+	$(LEX) --header=$*.yy.h -P $(notdir $*)yy $(OUTPUT_OPTION) $<
 
 %.1.gz: %
 	help2man -n m -s 1 -m User\ Commands ./$< | gzip -9 > $@

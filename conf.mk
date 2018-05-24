@@ -31,7 +31,7 @@ SRCDIR=.
 # Set your library options here.
 # A non-empty value means that it will be included
 # Enable mp3 tagging support
-USE_MP3:=
+USE_MP3:=yes
 # Enable flac tagging support
 USE_FLAC:=yes
 # Enable opus tagging support

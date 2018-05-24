@@ -54,7 +54,7 @@ void process_file(char *p, struct db_file *f)
 			if(fe->parser(p, f)){
 				qsort(f->tags, f->ntags, sizeof(struct db_tag),
 					tag_cmp);
-				logmsg(debug, "%lu comments processed\n",
+				logmsg(debug, "%lu tags processed\n",
 					f->ntags);
 
 				return;

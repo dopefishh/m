@@ -6,11 +6,12 @@
 #include "log.h"
 
 #include "format/format.tab.h"
+#include "format/format.yy.h"
 
-typedef struct yy_buffer_state *YY_BUFFER_STATE;
-extern YY_BUFFER_STATE formatyy_scan_string(char * str);
-extern int formatyyparse(void);
-extern void formatyy_delete_buffer(YY_BUFFER_STATE buffer);
+//typedef struct yy_buffer_state *YY_BUFFER_STATE;
+//extern YY_BUFFER_STATE formatyy_scan_string(char * str);
+//extern int formatyyparse(void);
+//extern void formatyy_delete_buffer(YY_BUFFER_STATE buffer);
 
 //Global variable
 struct listitem *fmt_list = NULL;
@@ -20,9 +21,9 @@ struct listitem *parse_fmt_atoms(char *fmt)
 	YY_BUFFER_STATE buffer = formatyy_scan_string(fmt);
 	int res = formatyyparse();
 	formatyy_delete_buffer(buffer);
-	if(res != 0) {
+	formatyylex_destroy();
+	if(res != 0)
 		die("fmt parsing error: %d\n", res);
-	}
 
 	return fmt_list;
 }
@@ -64,10 +65,10 @@ void rewrite(void *i)
 			struct fmt_atom *a = (struct fmt_atom *)item->atom.fun.args->value;
 			while(!a->islit)
 				rewrite(a);
-			logmsg(debug, "find %s tag\n", a->atom.lit);
+//			logmsg(debug, "find %s tag\n", a->atom.lit);
 			char *tag = file_tag_find(gdf, a->atom.lit);
 			if(tag == NULL) {
-				logmsg(warn, "Couldn't find tag %s\n", a->atom.lit);
+				logmsg(debug, "Couldn't find tag %s\n", a->atom.lit);
 				tag = "";
 			}
 			item->atom.lit = safe_strdup(tag);
@@ -83,7 +84,7 @@ void rewrite(void *i)
 			if(list_length(item->atom.fun.args) != 2){
 				die("k requires 2 arguments\n");
 			}
-			logmsg(debug, "k called with %llu args\n", list_length(item->atom.fun.args));
+//			logmsg(debug, "k called with %llu args\n", list_length(item->atom.fun.args));
 			struct fmt_atom *a2 = item->atom.fun.args->next->value;
 			while(!a2->islit)
 				rewrite(a2);
