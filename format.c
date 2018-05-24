@@ -72,6 +72,11 @@ void rewrite(void *i)
 				tag = "";
 			}
 			item->atom.lit = safe_strdup(tag);
+		} else if(strcmp(item->atom.fun.name, "filepath") == 0){
+			if(list_length(item->atom.fun.args) != 0){
+				die("filepath takes no arguments\n");
+			}
+			item->atom.lit = safe_strdup(gdf->path);
 		} else if(strcmp(item->atom.fun.name, "i") == 0){
 			if(list_length(item->atom.fun.args) != 1){
 				die("i requires 1 arguments\n");

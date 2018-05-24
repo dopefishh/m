@@ -48,10 +48,11 @@ struct db *load_db(char *path)
 	logmsg(debug, "Loading db at: %s\n", path);
 	struct db *db = safe_malloc(sizeof(struct db));
 	FILE *f = safe_fopen(path, "r");
+	bool verbose = safe_getc(f) != '\0';
 	db->version = parse_int64(f);
 	db->initialized = parse_int64(f);
 	db->last_modified = parse_int64(f);
-	db->rootpath = parse_string(f);
+	PARSE(verbose, f, db->rootpath, parse_string);
 	//Parse root
 	db->root = safe_malloc(sizeof(struct db_entry));
 	parse_db_entry(f, db->root);
@@ -59,7 +60,7 @@ struct db *load_db(char *path)
 	return db;
 }
 
-void save_db(struct db *db, char *path)
+void save_db(struct db *db, char *path, bool verbose)
 {
 	logmsg(debug, "Going to save db at: %s\n", path);
 	mkdir_p(path);
@@ -68,11 +69,12 @@ void save_db(struct db *db, char *path)
 	mkdir_p(path);
 	FILE *f = safe_fopen(path, "w");
 
-	write_int64(f, db->version);
-	write_int64(f, db->initialized);
-	write_int64(f, db->last_modified);
-	write_string(f, db->rootpath);
-	write_db_entry(f, db->root);
+	LABELEDI(verbose, 0, "verbose", f, verbose ? 1 : 0);
+	LABELEDI(verbose, 0, "version", f, db->version);
+	LABELEDI(verbose, 0, "initialized", f, db->initialized);
+	LABELEDI(verbose, 0, "last_modified", f, db->last_modified);
+	LABELEDS(verbose, 0, "rootpath", f, db->rootpath);
+	write_db_entry(0, f, db->root, verbose);
 	safe_fclose(f);
 }
 
@@ -178,7 +180,7 @@ void recurse(char *rp, dev_t dev, struct db_entry *entry)
 
 			for(uint64_t i = 0; i<oldnd; i++){
 				if(strcmp(de->d_name, oldds[i].dir) == 0){
-					logmsg(debug, "Found an old dbentry\n");
+					logmsg(debug, "Directory already in db\n");
 					e->nfile = oldds[i].nfile;
 					e->ndir = oldds[i].ndir;
 					e->files = oldds[i].files;
@@ -198,8 +200,8 @@ void recurse(char *rp, dev_t dev, struct db_entry *entry)
 			f->tags = NULL;
 			for(uint64_t i = 0; i<oldnf; i++){
 				if(strcmp(de->d_name, oldfs[i].path) == 0){
-					logmsg(debug, "Found an old dbentry\n");
-					if(buf.st_mtime <= oldfs[i].mtime){
+					if(buf.st_mtime > oldfs[i].mtime){
+						logmsg(debug, "Was newer, thus replace\n");
 						f->tags = oldfs[i].tags;
 						//Make sure they are not freed
 						oldfs[i].tags = NULL;

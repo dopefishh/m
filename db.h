@@ -36,7 +36,7 @@ struct db_tag {
 };
 
 struct db *get_db(char *path);
-void save_db(struct db *db, char *path);
+void save_db(struct db *db, char *path, bool verbose);
 void update_db(struct db *db);
 
 //Comparison

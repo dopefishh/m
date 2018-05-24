@@ -4,6 +4,7 @@
 #include "util.h"
 #include "db.h"
 #include "log.h"
+#include "parse.h"
 
 #define CHUNKSIZE 128
 
@@ -36,7 +37,7 @@ void write_int64(FILE *f, uint64_t i)
 
 void write_string(FILE *f, char *s)
 {
-	if(safe_fwrite(s, strlen(s)+1, 1, f) != 1)
+	if(safe_fwrite(f, strlen(s)+1, 1, f) != 1)
 		die("Unable to write string");
 }
 
@@ -106,33 +107,33 @@ void parse_db_entry(FILE *f, struct db_entry *r)
 	logmsg(debug, "Parsed db_entry: %s\n", r->dir);
 }
 
-void write_db_file(FILE *f, struct db_file *e)
+void write_db_file(uint64_t indent, FILE *f, struct db_file *e, bool verbose)
 {
 	logmsg(debug, "Write db_file: %s\n", e->path);
-	write_string(f, e->path);
-	write_int64(f, e->mtime);
-	write_int64(f, e->size);
+	LABELEDS(verbose, indent, "path", f, e->path);
+	LABELEDI(verbose, indent, "path", f, e->mtime);
+	LABELEDI(verbose, indent, "path", f, e->size);
 	if(e->tags == NULL){
-		write_int64(f, 0);
+		LABELEDI(verbose, indent, "ntags", f, 0);
 		logmsg(debug, "Written non music db_file\n");
 		return;
 	}
-	write_int64(f, e->ntags);
+	LABELEDI(verbose, indent, "ntags", f, e->ntags);
 	for(uint64_t i = 0; i<e->ntags; i++){
-		write_string(f, e->tags[i].key);
-		write_string(f, e->tags[i].value);
+		LABELEDS(verbose, indent+1, "key", f, e->tags[i].key);
+		LABELEDS(verbose, indent+1, "value", f, e->tags[i].value);
 	}
 	logmsg(debug, "Written db_file with %lu tags\n", e->ntags);
 }
 
-void write_db_entry(FILE *f, struct db_entry *e)
+void write_db_entry(uint64_t indent, FILE *f, struct db_entry *e, bool verbose)
 {
 	logmsg(debug, "Write db_entry: %s\n", e->dir);
-	write_string(f, e->dir);
-	write_int64(f, e->nfile);
-	write_int64(f, e->ndir);
+	LABELEDS(verbose, indent, "dir", f, e->dir);
+	LABELEDI(verbose, indent, "nfile", f, e->nfile);
+	LABELEDI(verbose, indent, "ndir", f, e->ndir);
 	for(uint64_t i = 0; i<e->nfile; i++)
-		write_db_file(f, &e->files[i]);
+		write_db_file(indent+1, f, &e->files[i], verbose);
 	for(uint64_t i = 0; i<e->ndir; i++)
-		write_db_entry(f, &e->dirs[i]);
+		write_db_entry(indent+1, f, &e->dirs[i], verbose);
 }

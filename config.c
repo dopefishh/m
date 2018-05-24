@@ -55,7 +55,6 @@ static const char *optstring = \
 	"d:"  \
 	"h::" \
 	"f:"  \
-	"l:"  \
 	"r:"  \
 	"s"   \
 	"v"   \
@@ -79,7 +78,6 @@ void usage(char *cmd, FILE *out, char *arg0)
 			"  -v,--verbose            Increase verbosity\n"
 			"  -s,--silent             Decrease verbosity\n"
 			"  -h,--help     [COMMAND] Print this help or the command specific\n"
-			"  -l,--log         FILE   Log to FILE instead of stdout\n"
 			"  --version               Print the version\n"
 			"\n"
 			"  -c,--config      FILE   Use the specified config\n"

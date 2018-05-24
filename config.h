@@ -12,6 +12,7 @@ enum command {c_print,c_update,c_search};
 
 struct mcommand {
 	char *database;
+	bool verbose_database;
 	char *config;
 	char *libraryroot;
 	char *logfile;
@@ -24,6 +25,7 @@ struct mcommand {
 		struct {
 			bool force_update;
 			bool fix_filesystem;
+			bool verbose;
 		} update_opts;
 		struct {
 			char *query;
