@@ -15,7 +15,9 @@
 static inline void serialize_int(FILE *f, uint64_t indent, char *label, uint64_t i, bool verbose)
 {
 	if(verbose){
-		serialize(f, indent, "%lu", label, i);
+		for(uint64_t i = 0; i<indent; i++)
+			safe_fputc('\t', f);
+		fprintf(f, "%s: %lu\n", label, i);
 	} else {
 		if(safe_fwrite((void *)&i, 8, 1, f) != 1){
 			die("Unable to write int");
@@ -26,7 +28,15 @@ static inline void serialize_int(FILE *f, uint64_t indent, char *label, uint64_t
 static inline void serialize_string(FILE *f, uint64_t indent, char *label, char *s, bool verbose)
 {
 	if(verbose){
-		serialize(f, indent,"%s", label, s);
+		for(uint64_t i = 0; i<indent; i++)
+			safe_fputc('\t', f);
+		fprintf(f, "%s: ", label);
+		while(*s != '\0'){
+			if(*s == '\n')
+				safe_fputc('\\', f);
+			safe_fputc(*s++, f);
+		}
+		safe_fputc('\n', f);
 	} else if(safe_fwrite(s, strlen(s)+1, 1, f) != 1) {
 		die("Unable to write string");
 	}
@@ -36,9 +46,10 @@ static inline void serialize_string(FILE *f, uint64_t indent, char *label, char 
 	line = get_line(f);\
 	c = strchr(line, ':');\
 	if(c == NULL)\
-		die("No : found");\
+		die("No : found: %s", line);\
 	if(strlen(c) == 1)\
 		die("No value after the :");\
+	c+=2;\
 }
 
 static inline uint64_t deserialize_int(FILE *f, bool verbose)

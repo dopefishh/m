@@ -8,11 +8,6 @@
 #include "format/format.tab.h"
 #include "format/format.yy.h"
 
-//typedef struct yy_buffer_state *YY_BUFFER_STATE;
-//extern YY_BUFFER_STATE formatyy_scan_string(char * str);
-//extern int formatyyparse(void);
-//extern void formatyy_delete_buffer(YY_BUFFER_STATE buffer);
-
 //Global variable
 struct listitem *fmt_list = NULL;
 
@@ -50,56 +45,41 @@ struct db_file *gdf;
 void rewrite(void *i)
 {
 	struct fmt_atom *item = (struct fmt_atom *)i;
-	//Recursive rewriting
-	//Done rewriting
 	if(!item->islit){
+		logmsg(debug, "rewrite a function: %s\n", item->atom.fun.name);
 		item->islit = true;
 		char *funname = item->atom.fun.name;
 		struct listitem *funargs = item->atom.fun.args;
 
 		//Rewrite
-		if(strcmp(item->atom.fun.name, "tag") == 0){
+		if(strcmp(funname, "tag") == 0){
 			if(list_length(item->atom.fun.args) != 1){
-				die("tag requires 1 arguments\n");
+				die("tag requires 2 arguments\n");
 			}
-			struct fmt_atom *a = (struct fmt_atom *)item->atom.fun.args->value;
+			struct fmt_atom *a = funargs->value;
 			while(!a->islit)
 				rewrite(a);
-//			logmsg(debug, "find %s tag\n", a->atom.lit);
 			char *tag = file_tag_find(gdf, a->atom.lit);
 			if(tag == NULL) {
-				logmsg(debug, "Couldn't find tag %s\n", a->atom.lit);
-				tag = "";
+				struct fmt_atom *fallback = funargs->next->value;
+				while(!fallback->islit)
+					rewrite(fallback);
+				tag = fallback->atom.lit;
 			}
 			item->atom.lit = safe_strdup(tag);
-		} else if(strcmp(item->atom.fun.name, "filepath") == 0){
+		} else if(strcmp(funname, "filepath") == 0){
 			if(list_length(item->atom.fun.args) != 0){
 				die("filepath takes no arguments\n");
 			}
 			item->atom.lit = safe_strdup(gdf->path);
-		} else if(strcmp(item->atom.fun.name, "i") == 0){
-			if(list_length(item->atom.fun.args) != 1){
-				die("i requires 1 arguments\n");
-			}
-			struct fmt_atom *a = (struct fmt_atom *)item->atom.fun.args->value;
-			while(!a->islit)
-				rewrite(a);
-			item->atom.lit = safe_strdup(a->atom.lit);
-		} else if(strcmp(item->atom.fun.name, "k") == 0){
-			if(list_length(item->atom.fun.args) != 2){
-				die("k requires 2 arguments\n");
-			}
-//			logmsg(debug, "k called with %llu args\n", list_length(item->atom.fun.args));
-			struct fmt_atom *a2 = item->atom.fun.args->next->value;
-			while(!a2->islit)
-				rewrite(a2);
-			item->atom.lit = safe_strdup(a2->atom.lit);
 		} else {
 			die("Unknown format function: %s\n", funname);
 		}
 
 		free(funname);
 		list_free(funargs, &fmt_atom_free);
+	} else {
+		logmsg(debug, "literal: %s\n", item->atom.lit);
 	}
 }
 

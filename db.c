@@ -114,7 +114,7 @@ void recurse(char *rp, dev_t dev, struct db_entry *entry)
 			free(pp);
 			continue;
 		}
-		if(buf.st_dev != dev && command.fields.update_opts.fix_filesystem){
+		if(buf.st_dev != dev && command.fixfilesystem){
 			logmsg(debug,
 				"Skipping %s, it is at a different fs\n", pp);
 			free(pp);
@@ -153,7 +153,7 @@ void recurse(char *rp, dev_t dev, struct db_entry *entry)
 			perror("stat");
 			continue;
 		}
-		if(buf.st_dev != dev && command.fields.update_opts.fix_filesystem){
+		if(buf.st_dev != dev && command.fixfilesystem){
 			logmsg(info, "Skipping %s, it is at a different fs\n",
 				de->d_name);
 			continue;
@@ -227,7 +227,7 @@ void update_db(struct db *db)
 
 	if(strcmp(db->rootpath, command.libraryroot) != 0){
 		logmsg(warn, "This db has a different root. Aborting\n");
-		logmsg(warn, "dbroot: %s, libraryroot: %s\n",
+		logmsg(warn, "dbroot: '%s', libraryroot: '%s'\n",
 			db->rootpath, command.libraryroot);
 		return;
 	}

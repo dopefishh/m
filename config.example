@@ -23,11 +23,13 @@ searchkeys = ARTIST,ALBUM
 # All other text is interpreted as literal strings.
 #
 # Available functions:
-# - fallback{t1, t2, ...}
-#   Outputs first t1, if it doesn't exist t2, etc.
+# - tag{t1, fallback}
+#   Tries to output tag t1, if it's not present, output fallback
 # - filepath
 #   Outputs the filepath
-format = $filepath{} -- albumartist: $tag{$i{albumartist}}\, artist: $tag{$k{artist,artist}}\, title: $tag{title}
+# - i, k, s
+#   The lambda IKS combinators
+format = $filepath{} -- albumartist: $tag{albumartist, $tag{artist, Unknown artist}}\, title: $tag{title, Unknown title}
 #format = $fallback{$tag{albumartist},$tag{artist}} - $tag{title}
 #format = literal - $noargs{} - $onearg{arg1}  - $twoarg{arg1,arg2} - $threearg{arg1,arg2, arg3}\
 #	$nested{$nested{}} - $nested{$nested1{abc}, $nested2{def, geg}}

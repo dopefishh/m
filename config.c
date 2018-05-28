@@ -287,6 +287,14 @@ void parse_config()
 				command.fixfilesystem = false;
 			else
 				logmsg(warn, "Couldn't parse boolean option: %s\n", v);
+		} else if (strcmp("databaseformat", k) == 0){
+			logmsg(debug, "Set format to %s\n", v);
+			if(strcmp("verbose", v) == 0)
+				command.verbosedb = true;
+			else if(strcmp("binary", v) == 0)
+				command.verbosedb = false;
+			else
+				logmsg(warn, "Couldn't database format: %s\n", v);
 		} else {
 			logmsg(warn, "Unknown config line: %s\n", k);
 		}
