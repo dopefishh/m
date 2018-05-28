@@ -1,6 +1,12 @@
 # Database file location
 database = ~/.local/share/m/db
 
+# Database format (verbose, binary)
+databaseformat = verbose
+
+# Fix the filesystem (true, false)
+fixfilesystem = true
+
 # Library root
 library = /mnt/data/music
 
