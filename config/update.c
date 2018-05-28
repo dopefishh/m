@@ -28,6 +28,8 @@ static struct option update_lopts[] =
 
 static const char *update_optstring = "hfxv";
 
+#include "../log.h"
+
 void update_cli(int argc, char **argv, char *argv0)
 {
 	int oi = 0;
@@ -41,6 +43,7 @@ void update_cli(int argc, char **argv, char *argv0)
 			command.fields.update_opts.fix_filesystem = true;
 			break;
 		case 'v':
+			logmsg(debug, "Setverbose db\n");
 			command.fields.update_opts.verbose = true;
 			break;
 		case 'h':

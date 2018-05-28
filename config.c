@@ -8,7 +8,6 @@
 #include "format.h"
 #include "list.h"
 #include "exclude.h"
-#include "parse.h"
 #include "log.h"
 #include "search.h"
 

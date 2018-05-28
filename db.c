@@ -8,10 +8,11 @@
 #include "format.h"
 #include "exclude.h"
 #include "config.h"
-#include "parse.h"
 #include "util.h"
 #include "db.h"
 #include "file.h"
+
+#include "db/io.h"
 
 #define M_DB_VERSION 1ull
 void free_files(struct db_file *f, int nfile);
@@ -38,7 +39,7 @@ struct db *init_db()
 	r->version = M_DB_VERSION;
 	r->rootpath = safe_strdup(command.libraryroot);
 	//Parse root
-	r->root = safe_calloc(sizeof(struct db_entry), 1);
+	r->root = safe_calloc(1, sizeof(struct db_entry));
 	r->root->dir = safe_strdup("/");
 	return r;
 }
@@ -46,16 +47,8 @@ struct db *init_db()
 struct db *load_db(char *path)
 {
 	logmsg(debug, "Loading db at: %s\n", path);
-	struct db *db = safe_malloc(sizeof(struct db));
 	FILE *f = safe_fopen(path, "r");
-	bool verbose = safe_getc(f) != '\0';
-	db->version = parse_int64(f);
-	db->initialized = parse_int64(f);
-	db->last_modified = parse_int64(f);
-	PARSE(verbose, f, db->rootpath, parse_string);
-	//Parse root
-	db->root = safe_malloc(sizeof(struct db_entry));
-	parse_db_entry(f, db->root);
+	struct db *db = deserialize_db(f);
 	safe_fclose(f);
 	return db;
 }
@@ -69,12 +62,7 @@ void save_db(struct db *db, char *path, bool verbose)
 	mkdir_p(path);
 	FILE *f = safe_fopen(path, "w");
 
-	LABELEDI(verbose, 0, "verbose", f, verbose ? 1 : 0);
-	LABELEDI(verbose, 0, "version", f, db->version);
-	LABELEDI(verbose, 0, "initialized", f, db->initialized);
-	LABELEDI(verbose, 0, "last_modified", f, db->last_modified);
-	LABELEDS(verbose, 0, "rootpath", f, db->rootpath);
-	write_db_entry(0, f, db->root, verbose);
+	serialize_db(f, db, verbose);
 	safe_fclose(f);
 }
 

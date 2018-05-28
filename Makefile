@@ -21,13 +21,13 @@ OBJS:= \
 	config/search.o \
 	config/update.o \
 	db.o \
+	db/io.o \
 	exclude.o \
 	file.o \
 	format.o \
 	list.o \
 	log.o \
 	m.o \
-	parse.o \
 	search.o \
 	util.o \
 	xdg.o \
