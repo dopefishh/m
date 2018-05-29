@@ -2,7 +2,7 @@ SHELL = /bin/sh
 include conf.mk
 
 CFLAGS?=-Wall -Wpedantic -Wextra -D_DEFAULT_SOURCE
-LDFLAGS?=
+LDFLAGS?=-lm
 
 ifdef DEBUG
 CFLAGS+=-g
