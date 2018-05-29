@@ -3,4 +3,4 @@ language: generic
 services:
     - docker
 script:
-    - docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp debian:stable sh -c 'apt-get update -qq && apt-get -qq install bison flex build-essential libvorbis-dev libflac-dev libopusfile-dev libid3tag0-dev && make -B'
+    - docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp debian:stable sh -c 'apt-get update -qq && apt-get -qq install bison flex build-essential libvorbis-dev libflac-dev libopusfile-dev libid3tag0-dev && sh make_allconfigs.sh'

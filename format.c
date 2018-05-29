@@ -1,3 +1,6 @@
+#include <errno.h>
+#include <stdarg.h>
+
 #include "list.h"
 #include "db.h"
 #include "file.h"
@@ -39,6 +42,29 @@ void fmt_free(struct listitem * fmt)
 {
 	list_free(fmt, &fmt_atom_free);
 }
+void rewrite(void *i);
+
+void nargfun(char *funname, struct listitem *funargs, int nargs, ...)
+{
+	va_list valist;
+	va_start(valist, nargs);
+
+	for (int i = 0; i < nargs; i++) {
+		if(funargs == NULL)
+			die("Not enough arguments to %s\n", funname);
+		struct fmt_atom *a = funargs->value;
+		char **lit = va_arg(valist, char **);
+
+		while(!a->islit)
+			rewrite(a);
+
+		*lit = a->atom.lit;
+		funargs = funargs->next;
+	}
+
+	va_end(valist);
+}
+
 
 FILE *gof;
 struct db_file *gdf;
@@ -46,40 +72,41 @@ void rewrite(void *i)
 {
 	struct fmt_atom *item = (struct fmt_atom *)i;
 	if(!item->islit){
-		logmsg(debug, "rewrite a function: %s\n", item->atom.fun.name);
 		item->islit = true;
 		char *funname = item->atom.fun.name;
 		struct listitem *funargs = item->atom.fun.args;
 
 		//Rewrite
 		if(strcmp(funname, "tag") == 0){
-			if(list_length(item->atom.fun.args) != 1){
-				die("tag requires 2 arguments\n");
-			}
-			struct fmt_atom *a = funargs->value;
-			while(!a->islit)
-				rewrite(a);
-			char *tag = file_tag_find(gdf, a->atom.lit);
+			char *tag = NULL, *fallback = NULL;
+			nargfun("tag", funargs, 2, &tag, &fallback);
+
+			tag = file_tag_find(gdf, tag);
 			if(tag == NULL) {
-				struct fmt_atom *fallback = funargs->next->value;
-				while(!fallback->islit)
-					rewrite(fallback);
-				tag = fallback->atom.lit;
+				tag = fallback;
 			}
 			item->atom.lit = safe_strdup(tag);
 		} else if(strcmp(funname, "filepath") == 0){
-			if(list_length(item->atom.fun.args) != 0){
-				die("filepath takes no arguments\n");
-			}
+			nargfun("filepath", funargs, 0);
 			item->atom.lit = safe_strdup(gdf->path);
+//		} else if(strcmp(funname, "pad") == 0){
+//			if(list_length(item->atom.fun.args) != 3){
+//				die("pad takes three arguments\n");
+//			}
+//			char *str, *padding, *width;
+//			arg3(str, padding, width, funargs);
+//			errno = 0;
+//			long int pwdith = strtol(width, NULL, 10);
+//			if(errno != 0)
+//				die("padding width not an integer\n");
+//			free(width);
+//
 		} else {
 			die("Unknown format function: %s\n", funname);
 		}
 
 		free(funname);
 		list_free(funargs, &fmt_atom_free);
-	} else {
-		logmsg(debug, "literal: %s\n", item->atom.lit);
 	}
 }
 

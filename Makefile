@@ -32,25 +32,25 @@ OBJS:= \
 	util.o \
 	xdg.o \
 
-ifdef USE_FLAC
+ifeq ($(USE_FLAC),yes)
 CFLAGS+=-DUSE_FLAC $(shell pkg-config --cflags flac)
 LDFLAGS+=$(shell pkg-config --libs flac)
 OBJS+=file/flac.o
 endif
 
-ifdef USE_OGG
+ifeq ($(USE_OGG),yes)
 CFLAGS+=-DUSE_OGG $(shell pkg-config --cflags vorbisfile)
 LDFLAGS+=$(shell pkg-config --libs vorbisfile)
 OBJS+=file/ogg.o
 endif
 
-ifdef USE_OPUS
+ifeq ($(USE_OPUS),yes)
 CFLAGS+=-DUSE_OPUS $(shell pkg-config --cflags opusfile)
 LDFLAGS+=$(shell pkg-config --libs opusfile)
 OBJS+=file/opus.o
 endif
 
-ifdef USE_MP3
+ifeq ($(USE_MP3),yes)
 CFLAGS+=-DUSE_MP3 $(shell pkg-config --cflags id3tag)
 LDFLAGS+=$(shell pkg-config --libs id3tag)
 OBJS+=file/mp3.o id3map.o

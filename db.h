@@ -2,6 +2,7 @@
 #define DB_H
 
 #include <time.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 

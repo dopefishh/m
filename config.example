@@ -8,7 +8,7 @@ databaseformat = verbose
 fixfilesystem = true
 
 # Library root
-library = /mnt/data/music
+library = /mnt/data/music/Ahab
 
 # Glob patterns of files/directories that should be excluded
 exclude = *Giant*
