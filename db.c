@@ -188,8 +188,9 @@ void recurse(char *rp, dev_t dev, struct db_entry *entry)
 			f->tags = NULL;
 			for(uint64_t i = 0; i<oldnf; i++){
 				if(strcmp(de->d_name, oldfs[i].path) == 0){
-					if(buf.st_mtime > oldfs[i].mtime){
-						logmsg(debug, "Was newer, thus replace\n");
+					logmsg(debug, "Was in the old db\n");
+					if(buf.st_mtime == oldfs[i].mtime){
+						logmsg(debug, "Same mtime, thus use the old\n");
 						f->tags = oldfs[i].tags;
 						//Make sure they are not freed
 						oldfs[i].tags = NULL;
