@@ -14,7 +14,7 @@
 
 // Dying
 void perrordie(char *prg);
-void die(char *msg, ...);
+void die(const char *msg, ...);
 
 // Allocation
 void *safe_malloc(size_t s);
@@ -25,15 +25,19 @@ void safe_free(int count, ...);
 // String
 char *safe_strcat(int count, ...);
 char *safe_strdup(const char *s);
+char *safe_strndup(const char *s, size_t n);
 char *trim(char *s);
 char *rtrimc(char *s, char c);
+char *get_line(FILE *);
 
 // File
 FILE *safe_fopen(char *path, char *mode);
 void safe_fclose(FILE *f);
 void safe_fputs(char *m, FILE *f);
+void safe_fputc(char m, FILE *f);
 void safe_fgets(char *m, int size, FILE *f);
 char safe_getc(FILE *f);
+void safe_ungetc(int c, FILE *f);
 void safe_fprintf(FILE *f, char *m, ...);
 void safe_vfprintf(FILE *f, char *m, va_list ap);
 size_t safe_fread(void *ptr, size_t size, size_t nmemb, FILE *f);

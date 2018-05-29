@@ -1,4 +1,7 @@
 *.o
+*.a
+*.tab.[ch]
+*.yy.[ch]
 m
 testdir
 m.1.gz

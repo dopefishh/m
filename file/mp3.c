@@ -131,11 +131,10 @@ void process_frame(struct id3_frame *fr, struct db_tag *tags, uint32_t *ti)
 	oldkey = key;
 	key = safe_strdup(id3map_get(fr->id, st ? key : NULL));
 	free(oldkey);
-	logmsg(debug, "Found lookup from id3map: %s\n", key);
+//	logmsg(debug, "Found lookup from id3map: %s\n", key);
 
-	for(uint32_t i = oldti; i<*ti; i++){
+	for(uint32_t i = oldti; i<*ti; i++)
 		tags[i].key = safe_strdup(key);
-	}
 	free(key);
 }
 
@@ -146,15 +145,11 @@ bool process_mp3(char *p, struct db_file *f)
 		return false;
 
 	struct id3_tag *mt = id3_file_tag(mf);
-	logmsg(info, "Found %lu tags\n", process_ntags(mt));
 	file_tag_init(f, process_ntags(mt));
 
 	uint32_t tagindex = 0;
-	for(unsigned int i = 0; i<mt->nframes; i++){
-		process_frame(mt->frames[i],
-			f->tags, &tagindex);
-	}
-	logmsg(info, "Really only written up to %d tags\n", tagindex-1);
+	for(unsigned int i = 0; i<mt->nframes; i++)
+		process_frame(mt->frames[i], f->tags, &tagindex);
 	f->ntags = tagindex;
 	f->tags = safe_realloc(f->tags, f->ntags*sizeof(struct db_tag));
 	return id3_file_close(mf) == 0;

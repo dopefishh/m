@@ -7,14 +7,15 @@
 
 struct listitem *list_append(struct listitem *head, void *value)
 {
-	if(head == NULL)
+	if(head == NULL){
 		return list_prepend(NULL, value);
+	}
 	struct listitem *r = head, *p;
 	do {
 		p = r;
 	} while((r = r->next) != NULL);
 	p->next = list_prepend(NULL, value);
-	return head;
+	return p->next;
 }
 
 struct listitem *list_prepend(struct listitem *head, void *value)
@@ -65,13 +66,22 @@ struct listitem *list_delete(struct listitem *head, uint32_t index, void **item)
 	return head;
 }
 
-void *list_iterate(struct listitem *head, void *st, void *(*stf)(void *, void *))
+size_t list_length(struct listitem *head)
+{
+	size_t r = 0;
+	while(head != NULL){
+		head = head->next;
+		r++;
+	}
+	return r;
+}
+
+void list_iterate(struct listitem *head, void (*stf)(void *))
 {
 	while(head != NULL){
-		st = stf(st, head->value);
+		stf(head->value);
 		head = head->next;
 	}
-	return st;
 }
 
 void list_free(struct listitem *head, void(*myfree)(void *))

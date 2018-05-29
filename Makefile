@@ -1,42 +1,56 @@
 SHELL = /bin/sh
 include conf.mk
 
-
-CFLAGS?=-Wall -Wpedantic -Wextra -Werror -D_DEFAULT_SOURCE
-LDFLAGS?=
+CFLAGS?=-Wall -Wpedantic -Wextra -D_DEFAULT_SOURCE
+LDFLAGS?=-lm
 
 ifdef DEBUG
 CFLAGS+=-g
+YFLAGS+=-t
 else
 CFLAGS+=-O3
 endif
 
 VERSION:=0.1
 PROGRAM:=m
-OBJS:=$(patsubst %.h,%.o,\
-		$(wildcard *.h) \
-		$(wildcard config/*.h)\
-	)
 
-ifdef USE_FLAC
+PARSERS:=format/format.a
+OBJS:= \
+	config.o \
+	config/print.o \
+	config/search.o \
+	config/update.o \
+	db.o \
+	db/io.o \
+	exclude.o \
+	file.o \
+	format.o \
+	list.o \
+	log.o \
+	m.o \
+	search.o \
+	util.o \
+	xdg.o \
+
+ifeq ($(USE_FLAC),yes)
 CFLAGS+=-DUSE_FLAC $(shell pkg-config --cflags flac)
 LDFLAGS+=$(shell pkg-config --libs flac)
 OBJS+=file/flac.o
 endif
 
-ifdef USE_OGG
+ifeq ($(USE_OGG),yes)
 CFLAGS+=-DUSE_OGG $(shell pkg-config --cflags vorbisfile)
 LDFLAGS+=$(shell pkg-config --libs vorbisfile)
 OBJS+=file/ogg.o
 endif
 
-ifdef USE_OPUS
+ifeq ($(USE_OPUS),yes)
 CFLAGS+=-DUSE_OPUS $(shell pkg-config --cflags opusfile)
 LDFLAGS+=$(shell pkg-config --libs opusfile)
 OBJS+=file/opus.o
 endif
 
-ifdef USE_MP3
+ifeq ($(USE_MP3),yes)
 CFLAGS+=-DUSE_MP3 $(shell pkg-config --cflags id3tag)
 LDFLAGS+=$(shell pkg-config --libs id3tag)
 OBJS+=file/mp3.o id3map.o
@@ -44,8 +58,19 @@ endif
 
 all: $(PROGRAM)
 
-$(PROGRAM): $(OBJS)
-	$(LINK.c) $(LDLIBS) $^ $(OUTPUT_OPTION)
+format.o: format/format.a
+
+$(PROGRAM): $(PARSERS) $(OBJS)
+	$(LINK.c) $(LDLIBS) $(OBJS) $(PARSERS) $(OUTPUT_OPTION)
+
+%.a: %.tab.o %.yy.o
+	$(AR) cr $@ $^
+
+%.tab.c %.tab.h: %.y
+	$(YACC.y) -b $* -d -Dapi.prefix={$(notdir $*)yy} $<
+
+%.yy.c: %.l
+	$(LEX) --header=$*.yy.h -P $(notdir $*)yy $(OUTPUT_OPTION) $<
 
 %.1.gz: %
 	help2man -n m -s 1 -m User\ Commands ./$< | gzip -9 > $@
@@ -78,4 +103,4 @@ distclean: clean
 	$(RM) $(PROGRAM)-$(VERSION).tar.gz
 
 clean:
-	$(RM) $(OBJS) $(PROGRAM) $(PROGRAM).1.gz
+	$(RM) $(PARSERS) $(PARSERS:%.a=%.tab.[och]) $(PARSERS:%.a=%.yy.[och]) $(OBJS) $(PROGRAM) $(PROGRAM).1.gz

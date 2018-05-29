@@ -5,8 +5,9 @@
 
 #include "config.h"
 #include "util.h"
+#include "format.h"
+#include "list.h"
 #include "exclude.h"
-#include "parse.h"
 #include "log.h"
 #include "search.h"
 
@@ -19,14 +20,17 @@
 #include "config/print.h"
 
 struct mcommand command =
-	{ .database    = NULL
-	, .config      = NULL
-	, .libraryroot = NULL
-	, .logfile     = NULL
+	{ .database      = NULL
+	, .config        = NULL
+	, .libraryroot   = NULL
+	, .logfile       = NULL
+	, .verbosedb     = false
+	, .fixfilesystem = false
+	, .fmt           = NULL
 #ifdef USE_MP3
-	, .id3mapping  = NULL
+	, .id3mapping    = NULL
 #endif
-	, .command     = c_print
+	, .command       = c_print
 	};
 
 static struct option lopts[] =
@@ -39,6 +43,11 @@ static struct option lopts[] =
 	{"libraryroot", no_argument,       0, 'r'},
 	{"db",          required_argument, 0, 'd'},
 	{"exclude",     required_argument, 0, 'e'},
+	{"format",      required_argument, 0, 'f'},
+	{"verbose-db",  no_argument,       0, 'b'},
+	{"binary-db",   no_argument,       0, 'B'},
+	{"fix-fs",      no_argument,       0, 'x'},
+	{"no-fix-fs",   no_argument,       0, 'X'},
 #ifdef USE_MP3
 	{"id3map",      required_argument, 0, '3'},
 #endif
@@ -46,16 +55,19 @@ static struct option lopts[] =
 };
 
 static const char *optstring = \
-	"+"    \
-	"c:"   \
-	"d:"   \
-	"h::"  \
-	"l:"   \
-	"r:"   \
-	"s"    \
-	"v"    \
-	"V"    \
-	"3:"   \
+	"+"   \
+	"b"   \
+	"B"   \
+	"c:"  \
+	"d:"  \
+	"h::" \
+	"f:"  \
+	"r:"  \
+	"s"   \
+	"v"   \
+	"V"   \
+	"x"   \
+	"3:"  \
 	"e:";
 
 void version(FILE *out)
@@ -74,13 +86,17 @@ void usage(char *cmd, FILE *out, char *arg0)
 			"  -v,--verbose            Increase verbosity\n"
 			"  -s,--silent             Decrease verbosity\n"
 			"  -h,--help     [COMMAND] Print this help or the command specific\n"
-			"  -l,--log         FILE   Log to FILE instead of stdout\n"
 			"  --version               Print the version\n"
 			"\n"
 			"  -c,--config      FILE   Use the specified config\n"
 			"  -d,--db          FILE   Use the specified database\n"
+			"  -b,--verbose-db         Write the database in verbose format (debugging only)\n"
+			"  -B,--binary-db          Write the database in binary format (default)\n"
 			"  -r,--libraryroot FILE   User FILE as the database root\n\n"
 			"  -e,--exclude     GLOB   Add GLOB to the exclusion list\n"
+			"  -f,--format      FMT    Format the output with FMT\n"
+			"  -x,--fix-fs             Stay within one filesystem\n"
+			"  -X,--no-fix-fs          Allow indexing across filesystems\n"
 #ifdef USE_MP3
 			"\n"
 			"MP3 specific options\n"
@@ -107,6 +123,14 @@ void parse_cli(int argc, char **argv)
 	int c;
 	while((c = getopt_long(argc, argv, optstring, lopts, &oi)) != -1){
 		switch (c) {
+		case 'b':
+			logmsg(debug, "Write the database verbosely\n");
+			command.verbosedb = true;
+			break;
+		case 'B':
+			logmsg(debug, "Write the database binary\n");
+			command.verbosedb = false;
+			break;
 		case 'c':
 			logmsg(debug, "Set config location: %s\n", optarg);
 			ASSIGNFREE(command.config, resolve_tilde(optarg));
@@ -120,9 +144,13 @@ void parse_cli(int argc, char **argv)
 			version(stdout);
 			exit(EXIT_SUCCESS);
 		case 'h':
-			printf("optarg: %s\n", optarg);
 			usage(optarg, stdout, argv[0]);
 			exit(EXIT_SUCCESS);
+		case 'f':
+			logmsg(debug, "Output format: %s\n", optarg);
+			fmt_free(command.fmt);
+			command.fmt = parse_fmt_atoms(optarg);
+			break;
 		case 'l':
 			ASSIGNFREE(command.logfile, resolve_tilde(optarg));
 			logmsg(debug, "Log output set to: %s\n", optarg);
@@ -142,6 +170,14 @@ void parse_cli(int argc, char **argv)
 		case 'e':
 			exclude_add(safe_strdup(optarg));
 			logmsg(debug, "Exclusion pattern added\n");
+			break;
+		case 'x':
+			command.fixfilesystem = true;
+			logmsg(debug, "Fix filesystem\n");
+			break;
+		case 'X':
+			command.fixfilesystem = false;
+			logmsg(debug, "Fix filesystem\n");
 			break;
 #ifdef USE_MP3
 		case '3':
@@ -239,6 +275,26 @@ void parse_config()
 				search_key_add(safe_strdup(trim(tok)));
 				tok = strtok(NULL, ",");
 			}
+		} else if (strcmp("format", k) == 0){
+			logmsg(debug, "Set output format to: %s\n", v);
+			fmt_free(command.fmt);
+			command.fmt = parse_fmt_atoms(v);
+		} else if (strcmp("fixfilesystem", k) == 0){
+			logmsg(debug, "Fix filesystem set to %s\n", v);
+			if(strcmp("true", v) == 0)
+				command.fixfilesystem = true;
+			else if(strcmp("false", v) == 0)
+				command.fixfilesystem = false;
+			else
+				logmsg(warn, "Couldn't parse boolean option: %s\n", v);
+		} else if (strcmp("databaseformat", k) == 0){
+			logmsg(debug, "Set format to %s\n", v);
+			if(strcmp("verbose", v) == 0)
+				command.verbosedb = true;
+			else if(strcmp("binary", v) == 0)
+				command.verbosedb = false;
+			else
+				logmsg(warn, "Couldn't database format: %s\n", v);
 		} else {
 			logmsg(warn, "Unknown config line: %s\n", k);
 		}
@@ -252,6 +308,7 @@ void free_config()
 {
 	safe_free(3, command.database, command.libraryroot, command.config);
 	exclude_free();
+	fmt_free(command.fmt);
 
 #ifdef USE_MP3
 	id3map_free();

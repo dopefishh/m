@@ -5,12 +5,14 @@
 #include <sys/types.h>
 
 #include "log.h"
+#include "format.h"
 #include "exclude.h"
 #include "config.h"
-#include "parse.h"
 #include "util.h"
 #include "db.h"
 #include "file.h"
+
+#include "db/io.h"
 
 #define M_DB_VERSION 1ull
 void free_files(struct db_file *f, int nfile);
@@ -37,7 +39,7 @@ struct db *init_db()
 	r->version = M_DB_VERSION;
 	r->rootpath = safe_strdup(command.libraryroot);
 	//Parse root
-	r->root = safe_calloc(sizeof(struct db_entry), 1);
+	r->root = safe_calloc(1, sizeof(struct db_entry));
 	r->root->dir = safe_strdup("/");
 	return r;
 }
@@ -45,20 +47,13 @@ struct db *init_db()
 struct db *load_db(char *path)
 {
 	logmsg(debug, "Loading db at: %s\n", path);
-	struct db *db = safe_malloc(sizeof(struct db));
 	FILE *f = safe_fopen(path, "r");
-	db->version = parse_int64(f);
-	db->initialized = parse_int64(f);
-	db->last_modified = parse_int64(f);
-	db->rootpath = parse_string(f);
-	//Parse root
-	db->root = safe_malloc(sizeof(struct db_entry));
-	parse_db_entry(f, db->root);
+	struct db *db = deserialize_db(f);
 	safe_fclose(f);
 	return db;
 }
 
-void save_db(struct db *db, char *path)
+void save_db(struct db *db, char *path, bool verbose)
 {
 	logmsg(debug, "Going to save db at: %s\n", path);
 	mkdir_p(path);
@@ -67,11 +62,7 @@ void save_db(struct db *db, char *path)
 	mkdir_p(path);
 	FILE *f = safe_fopen(path, "w");
 
-	write_int64(f, db->version);
-	write_int64(f, db->initialized);
-	write_int64(f, db->last_modified);
-	write_string(f, db->rootpath);
-	write_db_entry(f, db->root);
+	serialize_db(f, db, verbose);
 	safe_fclose(f);
 }
 
@@ -123,7 +114,7 @@ void recurse(char *rp, dev_t dev, struct db_entry *entry)
 			free(pp);
 			continue;
 		}
-		if(buf.st_dev != dev && command.fields.update_opts.fix_filesystem){
+		if(buf.st_dev != dev && command.fixfilesystem){
 			logmsg(debug,
 				"Skipping %s, it is at a different fs\n", pp);
 			free(pp);
@@ -162,7 +153,7 @@ void recurse(char *rp, dev_t dev, struct db_entry *entry)
 			perror("stat");
 			continue;
 		}
-		if(buf.st_dev != dev && command.fields.update_opts.fix_filesystem){
+		if(buf.st_dev != dev && command.fixfilesystem){
 			logmsg(info, "Skipping %s, it is at a different fs\n",
 				de->d_name);
 			continue;
@@ -177,7 +168,7 @@ void recurse(char *rp, dev_t dev, struct db_entry *entry)
 
 			for(uint64_t i = 0; i<oldnd; i++){
 				if(strcmp(de->d_name, oldds[i].dir) == 0){
-					logmsg(debug, "Found an old dbentry\n");
+					logmsg(debug, "Directory already in db\n");
 					e->nfile = oldds[i].nfile;
 					e->ndir = oldds[i].ndir;
 					e->files = oldds[i].files;
@@ -197,8 +188,9 @@ void recurse(char *rp, dev_t dev, struct db_entry *entry)
 			f->tags = NULL;
 			for(uint64_t i = 0; i<oldnf; i++){
 				if(strcmp(de->d_name, oldfs[i].path) == 0){
-					logmsg(debug, "Found an old dbentry\n");
-					if(buf.st_mtime <= oldfs[i].mtime){
+					logmsg(debug, "Was in the old db\n");
+					if(buf.st_mtime == oldfs[i].mtime){
+						logmsg(debug, "Same mtime, thus use the old\n");
 						f->tags = oldfs[i].tags;
 						//Make sure they are not freed
 						oldfs[i].tags = NULL;
@@ -236,7 +228,7 @@ void update_db(struct db *db)
 
 	if(strcmp(db->rootpath, command.libraryroot) != 0){
 		logmsg(warn, "This db has a different root. Aborting\n");
-		logmsg(warn, "dbroot: %s, libraryroot: %s\n",
+		logmsg(warn, "dbroot: '%s', libraryroot: '%s'\n",
 			db->rootpath, command.libraryroot);
 		return;
 	}
@@ -272,14 +264,9 @@ void print_db_entry(int indent, struct db_entry *e, FILE *f)
 			continue;
 		for(int j = 0; j<indent+1; j++)
 			safe_fputs("  ", f);
-		safe_fprintf(f, "| %s", e->files[i].path);
-		if(e->files[i].tags != NULL)
-			safe_fprintf(f,
-				" with %lu tags\n", e->files[i].ntags);
-		else
-			safe_fputs("\n", f);
+		safe_fprintf(f, "| %s: ", e->files[i].path);
+		fformat(f, command.fmt, &e->files[i]);
 	}
-
 }
 
 void print_db(struct db *db, FILE *f)

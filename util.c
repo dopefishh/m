@@ -18,7 +18,7 @@ void perrordie(char *prg)
 	die("Aborting\n");
 }
 
-void die(char *msg, ...)
+void die(const char *msg, ...)
 {
 	va_list ap;
 	va_start(ap, msg);
@@ -87,6 +87,14 @@ char *safe_strdup(const char *s)
 	return r;
 }
 
+char *safe_strndup(const char *s, size_t n)
+{
+	char *r = strndup(s, n);
+	if (r == NULL)
+		perrordie("strndup");
+	return r;
+}
+
 char *trim(char *s)
 {
 	while(isspace(s[0]))
@@ -103,6 +111,35 @@ char *rtrimc(char *s, char c)
 	while(c == s[i] && i>0)
 		s[i--] = '\0';
 	return s;
+}
+
+char *get_line(FILE *f)
+{
+	size_t total = 128, read = 0;
+	char *b = safe_malloc(total);
+	b[0] = '\0';
+	while(true){
+		if(total > 1024*1024*1024)
+			die("Too big of a line\n");
+
+		if(read >= total - 1)
+			b = safe_realloc(b, total+=128);
+
+		safe_fgets(b+read, total-read, f);
+		read += strlen(b+read);
+
+		if(feof(f))
+			break;
+
+		if(b[read-1] == '\n'){
+			b[--read] = '\0';
+			if(read > 0 && b[read-1] == '\\')
+				b[--read] = '\0';
+			else
+				break;
+		}
+	}
+	return b;
 }
 
 char *safe_getenv(char *env, char *def)
@@ -133,6 +170,12 @@ void safe_fputs(char *m, FILE *f)
 		perrordie("fputs");
 }
 
+void safe_fputc(char m, FILE *f)
+{
+	if(fputc(m, f) == EOF)
+		perrordie("fputc");
+}
+
 void safe_fgets(char *m, int size, FILE *f)
 {
 	if(fgets(m, size, f) == NULL && !feof(f))
@@ -145,6 +188,12 @@ char safe_getc(FILE *f)
 	if(c == EOF && !feof(f))
 		perrordie("getc");
 	return c;
+}
+
+void safe_ungetc(int c, FILE *f)
+{
+	if(ungetc(c, f) == EOF)
+		perrordie("ungetc");
 }
 
 void safe_fprintf(FILE *f, char *m, ...)

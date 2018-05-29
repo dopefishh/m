@@ -40,7 +40,7 @@ struct fmap fmapping[] = {
 
 static int tag_cmp(const void *t1, const void *t2)
 {
-	return strcmp(((struct db_tag *)t1)->key,
+	return strcasecmp(((struct db_tag *)t1)->key,
 		((struct db_tag *)t2)->key);
 }
 
@@ -54,7 +54,7 @@ void process_file(char *p, struct db_file *f)
 			if(fe->parser(p, f)){
 				qsort(f->tags, f->ntags, sizeof(struct db_tag),
 					tag_cmp);
-				logmsg(debug, "%lu comments processed\n",
+				logmsg(debug, "%lu tags processed\n",
 					f->ntags);
 
 				return;
@@ -94,4 +94,14 @@ bool file_tag_split_eq(char *k, char **key, char **value)
 	*key = safe_strdup(k);
 	*value = safe_strdup(v);
 	return true;
+}
+
+char *file_tag_find(struct db_file *f, char *key)
+{
+	if(f->tags == NULL)
+		return NULL;
+	struct db_tag t = {.key=key, .value=NULL};
+	struct db_tag *r =
+		bsearch(&t, f->tags, f->ntags, sizeof(struct db_tag), tag_cmp);
+	return r != NULL ? ((struct db_tag *)r)->value : NULL;
 }
