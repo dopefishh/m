@@ -34,6 +34,7 @@ struct mcommand {
 } command;
 
 void usage(char *cmd, FILE *out, char *arg0);
+void config_defaults();
 void parse_config();
 void parse_cli(int argc, char **argv);
 void free_config();

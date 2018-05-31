@@ -8,6 +8,9 @@
 #include "search.h"
 #include "util.h"
 #include "xdg.h"
+#ifdef USE_MP3
+#include "id3map.h"
+#endif
 
 int main(int argc, char **argv)
 {
@@ -15,13 +18,7 @@ int main(int argc, char **argv)
 	init_logging();
 
 	//Set defaults
-	command.config = get_config_path();
-	char *d = get_data_dir();
-	command.database = get_file(d, "db");
-	free(d);
-	d = resolve_tilde("~/Music");
-	command.libraryroot = safe_getenv("XDG_MUSIC_DIR", d);
-	free(d);
+	config_defaults();
 
 	//Gather settings
 	parse_cli(argc, argv);

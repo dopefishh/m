@@ -39,6 +39,16 @@ void id3map_add_from_string(char *id)
 	id3map_add(trim(id), trim(key), txxx);
 }
 
+void id3map_add_multiple_from_string(char *id)
+{
+	char *tok;
+	tok = strtok(id, ",");
+	while(tok != NULL){
+		id3map_add_from_string(trim(tok));
+		tok = strtok(NULL, ",");
+	}
+}
+
 void *equalid;
 char *equaltxxx;
 bool id3map_equal(void *a)
@@ -85,4 +95,49 @@ void id3map_free()
 {
 	list_free(head, &id3map_f);
 	head = NULL;
+}
+
+void id3map_set_default()
+{
+	id3map_free();
+	id3map_add_multiple_from_string(
+		"TALB:ALBUM,"
+		"TSOA:ALBUMSORT,"
+		"XSOA:ALBUMSORT,"
+		"TSST:DISCSUBTITLE,"
+		"TIT1:GROUPING,"
+		"TIT2:TITLE,"
+		"TSOT:TITLESORT,"
+		"XSOT:TITLESORT,"
+		"TIT3:SUBTITLE,"
+		"TPE2:ALBUMARTIST,"
+		"TSO2:ALBUMARTISTSORT,"
+		"TPE1:ARTIST,"
+		"TSOP:ARTISTSORT,"
+		"XSOP:ARTISTSORT,"
+		"TEXT:AUTHOR,"
+		"TCOM:COMPOSER,"
+		"TPE3:CONDUCTOR,"
+		"TPUB:PUBLISHER,"
+		"TPE4:REMIXER,"
+		"TPOS:DISCNUMBER,"
+		"TRCK:TRACKNUMBER,"
+		"POPM:RATING,"
+		"TYER:DATE,"
+		"TDRC:DATE,"
+		"TDOR:ORIGINALDATE,"
+		"TSRC:ISRC,"
+		"TCMP:COMPILATION,"
+		"TENC:ENCODED-BY,"
+		"TSSE:ENCODER,"
+		"TMED:MEDIA,"
+		"TCON:GENRE,"
+		"TMOO:MOOD,"
+		"TBPM:BPM,"
+		"COMM:COMMENT,"
+		"TCOP:COPYRIGHT,"
+		"TLAN:LANGUAGE,"
+		"WCOP:LICENCE,"
+		"USLT:LYRICS,"
+		"TXXX:ALBUMARTISTSORT:ALBUMARTIST2");
 }

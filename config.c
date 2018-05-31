@@ -10,6 +10,7 @@
 #include "exclude.h"
 #include "log.h"
 #include "search.h"
+#include "xdg.h"
 
 #ifdef USE_MP3
 #include "id3map.h"
@@ -257,12 +258,8 @@ void parse_config()
 #ifdef USE_MP3
 		} else if (strcmp("id3mapping", k) == 0){
 			logmsg(debug, "Parsing id3map entr{y,ies}\n", v);
-			char *tok;
-			tok = strtok(v, ",");
-			while(tok != NULL){
-				id3map_add_from_string(trim(tok));
-				tok = strtok(NULL, ",");
-			}
+			id3map_free();
+			id3map_add_multiple_from_string(v);
 #endif
 		} else if (strcmp("exclude", k) == 0){
 			logmsg(debug, "Parsing exclude pattern\n", v);
@@ -315,4 +312,18 @@ void free_config()
 #endif
 
 	search_key_free();
+}
+
+void config_defaults()
+{
+	command.config = get_config_path();
+	char *d = get_data_dir();
+	command.database = get_file(d, "db");
+	free(d);
+	d = resolve_tilde("~/Music");
+	command.libraryroot = safe_getenv("XDG_MUSIC_DIR", d);
+	free(d);
+#ifdef USE_MP3
+	id3map_set_default();
+#endif
 }
