@@ -192,6 +192,7 @@ void recurse(char *rp, dev_t dev, struct db_entry *entry)
 					if(buf.st_mtime == oldfs[i].mtime){
 						logmsg(debug, "Same mtime, thus use the old\n");
 						f->tags = oldfs[i].tags;
+						f->ntags = oldfs[i].ntags;
 						//Make sure they are not freed
 						oldfs[i].tags = NULL;
 					}
