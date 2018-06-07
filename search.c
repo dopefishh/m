@@ -25,9 +25,8 @@ void *search(struct db_file *f, void *st)
 		//See if the tag is there
 		void *res = bsearch(c->value, f->tags, f->ntags, sizeof(struct db_tag), tag_cmp);
 		if(res != NULL){
-			logmsg(debug, "search for %s=%s in %s, found %s\n", c->value, gq->query, f->path, res);
-			if(strcmp(((struct db_tag*)res)->value,
-					gq->query) == 0){
+			logmsg(debug, "search for %s=%s in %s, found %s\n", c->value, gq->query, f->path, ((struct db_tag *)res)->value);
+			if(strcmp(((struct db_tag *)res)->value, gq->query) == 0){
 				st = (void *)list_prepend(st, f);
 				break;
 			}
