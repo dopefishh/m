@@ -28,6 +28,7 @@ struct mcommand command =
 	, .verbosedb     = false
 	, .fixfilesystem = false
 	, .fmt           = NULL
+	, .dbindex       = NULL
 #ifdef USE_MP3
 	, .id3mapping    = NULL
 #endif
@@ -292,6 +293,9 @@ void parse_config()
 				command.verbosedb = false;
 			else
 				logmsg(warn, "Couldn't database format: %s\n", v);
+		} else if (strcmp("databaseindex", k) == 0){
+			logmsg(debug, "Append index: %s\n", v);
+			command.dbindex = list_append(command.dbindex, parse_fmt_atoms(v));
 		} else {
 			logmsg(warn, "Unknown config line: %s\n", k);
 		}
@@ -306,6 +310,7 @@ void free_config()
 	safe_free(3, command.database, command.libraryroot, command.config);
 	exclude_free();
 	fmt_free(command.fmt);
+	list_free(command.dbindex, (void (*)(void *))&fmt_free);
 
 #ifdef USE_MP3
 	id3map_free();

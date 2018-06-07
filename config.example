@@ -16,6 +16,12 @@ exclude = *Giant*
 # Search keys to use when searching, only these tags wil be searched
 searchkeys = ARTIST,ALBUM
 
+# Database index. There can be multiple. It describes the structure of the
+# database in which is searched. See Print Format for the format specificaiton.
+databaseindex = $tag{artist}
+databaseindex = $tag{album}
+databaseindex = $tag{date}
+
 # Print format
 # Escaping can be done with \. E.g. \$ prints a literal $
 # ${tagname} can be used to substitute the specifier with the tag.

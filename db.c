@@ -304,3 +304,14 @@ void free_db(struct db *db)
 	free_dbentry(*db->root);
 	safe_free(3, db->rootpath, db->root, db);
 }
+
+void *iterate_db(struct db_entry *db, void *st, void *(*stf)(struct db_file *, void *))
+{
+	//In the directories we recurse
+	for(uint64_t i = 0; i<db->ndir; i++)
+		st = iterate_db(&(db->dirs[i]), st, stf);
+	//In the files we apply the state function
+	for(uint64_t file = 0; file<db->nfile; file++)
+		st = stf(&(db->files[file]), st);
+	return st;
+}

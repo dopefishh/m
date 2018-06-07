@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "db.h"
+#include "db/shadow.h"
 #include "log.h"
 #include "search.h"
 #include "util.h"
@@ -35,6 +36,7 @@ int main(int argc, char **argv)
 		case c_update:
 			logmsg(info, "Updating db\n");
 			update_db(db);
+			index_db(db, command.dbindex);
 			save_db(db, command.database, command.verbosedb);
 			break;
 		case c_search:

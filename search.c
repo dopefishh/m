@@ -12,46 +12,38 @@ static int tag_cmp(const void *k, const void *v)
 	return strcmp((char *)k, ((struct db_tag *)v)->key);
 }
 
-struct listitem *search(struct db_entry *db, struct query *q, struct listitem *rhd)
+struct query *gq;
+void *search(struct db_file *f, void *st)
 {
-	//In the directories we recurse
-	for(uint64_t i = 0; i<db->ndir; i++){
-		rhd = search(&(db->dirs[i]), q, rhd);
+	if(f->tags == NULL){
+		logmsg(debug, "skip non music file\n");
+		return st;
 	}
-	//In the files
-	for(uint64_t file = 0; file<db->nfile; file++){
-		struct db_file *f = &(db->files[file]);
-		if(f->tags == NULL){
-			logmsg(debug, "skip non music file\n");
-			continue;
-		}
-		//For each search key
-		struct listitem *c = head;
-		while(c != NULL){
-			//Find if the tag is there
-			void *res = bsearch(c->value, f->tags, f->ntags,
-				sizeof(struct db_tag), tag_cmp);
-			if(res != NULL){
-				logmsg(debug, "search for %s=%s in %s, found %s\n", c->value, q->query, f->path, res);
-				if(strcmp(((struct db_tag*)res)->value,
-						q->query) == 0){
-					rhd = list_prepend(rhd, f);
-					break;
-				}
+	//For each search key
+	struct listitem *c = head;
+	while(c != NULL){
+		//See if the tag is there
+		void *res = bsearch(c->value, f->tags, f->ntags, sizeof(struct db_tag), tag_cmp);
+		if(res != NULL){
+			logmsg(debug, "search for %s=%s in %s, found %s\n", c->value, gq->query, f->path, res);
+			if(strcmp(((struct db_tag*)res)->value,
+					gq->query) == 0){
+				st = (void *)list_prepend(st, f);
+				break;
 			}
-			c = c->next;
 		}
+		c = c->next;
 	}
-	return rhd;
+	return st;
 }
 
 void search_db(struct db * db)
 {
-	struct query *q = parse_query(command.fields.search_opts.query);
+	gq = parse_query(command.fields.search_opts.query);
 	logmsg(warn, "Searching for %s\n", command.fields.search_opts.query);
 
-	//Search
-	struct listitem *result = search(db->root, q, NULL);
+	//Naive searching:
+	struct listitem *result = iterate_db(db->root, NULL, &search);
 
 	//Print
 	for(struct listitem *i = result; i != NULL; i = i->next){
@@ -62,7 +54,7 @@ void search_db(struct db * db)
 	//Free
 	list_free(result, list_free_ignore);
 
-	free(q);
+	free(gq);
 	(void)db;
 }
 

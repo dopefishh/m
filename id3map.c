@@ -100,7 +100,7 @@ void id3map_free()
 void id3map_set_default()
 {
 	id3map_free();
-	id3map_add_multiple_from_string(
+	char *t = safe_strdup(
 		"TALB:ALBUM,"
 		"TSOA:ALBUMSORT,"
 		"XSOA:ALBUMSORT,"
@@ -140,4 +140,6 @@ void id3map_set_default()
 		"WCOP:LICENCE,"
 		"USLT:LYRICS,"
 		"TXXX:ALBUMARTISTSORT:ALBUMARTIST2");
+	id3map_add_multiple_from_string(t);
+	free(t);
 }

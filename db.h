@@ -40,6 +40,8 @@ struct db *get_db(char *path);
 void save_db(struct db *db, char *path, bool verbose);
 void update_db(struct db *db);
 
+void *iterate_db(struct db_entry *db, void *st, void *(*stf)(struct db_file *, void *));
+
 //Comparison
 int db_file_cmp(const void *a1, const void *a2);
 int db_entry_cmp(const void *a1, const void *a2);

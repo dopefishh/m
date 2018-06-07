@@ -22,6 +22,7 @@ OBJS:= \
 	config/update.o \
 	db.o \
 	db/io.o \
+	db/shadow.o \
 	exclude.o \
 	file.o \
 	format.o \

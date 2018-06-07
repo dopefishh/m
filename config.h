@@ -18,6 +18,7 @@ struct mcommand {
 	bool verbosedb;
 	bool fixfilesystem;
 	struct listitem *fmt;
+	struct listitem *dbindex;
 #ifdef USE_MP3
 	char *id3mapping;
 #endif
