@@ -128,20 +128,20 @@ char *get_line(FILE *f, bool nl)
 		safe_fgets(b+read, total-read, f);
 		read += strlen(b+read);
 
-		if(feof(f))
-			break;
-
 		if(b[read-1] == '\n'){
 			b[--read] = '\0';
 			if(read > 0 && b[read-1] == '\\'){
 				if(nl)
-					b[--read] = '\0';
-				else
 					b[read-1] = '\n';
+				else
+					b[--read] = '\0';
 			} else {
 				break;
 			}
 		}
+
+		if(feof(f))
+			break;
 	}
 	return b;
 }
