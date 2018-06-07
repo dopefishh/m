@@ -230,7 +230,7 @@ void parse_config()
 	char *l = NULL, *k, *v, *t;
 	while(!feof(f)){
 		free(l);
-		l = get_line(f);
+		l = get_line(f, false);
 
 		//Check for comment
 		t = strchr(l, '#');

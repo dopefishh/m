@@ -113,7 +113,7 @@ char *rtrimc(char *s, char c)
 	return s;
 }
 
-char *get_line(FILE *f)
+char *get_line(FILE *f, bool nl)
 {
 	size_t total = 128, read = 0;
 	char *b = safe_malloc(total);
@@ -133,10 +133,14 @@ char *get_line(FILE *f)
 
 		if(b[read-1] == '\n'){
 			b[--read] = '\0';
-			if(read > 0 && b[read-1] == '\\')
-				b[--read] = '\0';
-			else
+			if(read > 0 && b[read-1] == '\\'){
+				if(nl)
+					b[--read] = '\0';
+				else
+					b[read-1] = '\n';
+			} else {
 				break;
+			}
 		}
 	}
 	return b;

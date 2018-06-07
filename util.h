@@ -28,7 +28,7 @@ char *safe_strdup(const char *s);
 char *safe_strndup(const char *s, size_t n);
 char *trim(char *s);
 char *rtrimc(char *s, char c);
-char *get_line(FILE *);
+char *get_line(FILE *, bool);
 
 // File
 FILE *safe_fopen(char *path, char *mode);

@@ -43,7 +43,7 @@ static inline void serialize_string(FILE *f, uint64_t indent, char *label, char 
 }
 
 #define deserialize(f, line, c) {\
-	line = get_line(f);\
+	line = get_line(f, true);\
 	c = strchr(line, ':');\
 	if(c == NULL)\
 		die("No : found: %s", line);\
