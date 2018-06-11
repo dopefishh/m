@@ -13,7 +13,7 @@ static int tag_cmp(const void *k, const void *v)
 }
 
 struct query *gq;
-void *search(struct db_file *f, void *st)
+void *search(void *st, struct db_file *f)
 {
 	if(f->tags == NULL){
 		logmsg(debug, "skip non music file\n");

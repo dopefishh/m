@@ -295,7 +295,10 @@ void parse_config()
 				logmsg(warn, "Couldn't database format: %s\n", v);
 		} else if (strcmp("databaseindex", k) == 0){
 			logmsg(debug, "Append index: %s\n", v);
-			command.dbindex = list_append(command.dbindex, parse_fmt_atoms(v));
+			if(command.dbindex == NULL)
+				command.dbindex = list_append(command.dbindex, parse_fmt_atoms(v));
+			else
+				list_append(command.dbindex, parse_fmt_atoms(v));
 		} else {
 			logmsg(warn, "Unknown config line: %s\n", k);
 		}

@@ -76,12 +76,13 @@ size_t list_length(struct listitem *head)
 	return r;
 }
 
-void list_iterate(struct listitem *head, void (*stf)(void *))
+void *list_iterate(struct listitem *head, void *st, void *(*stf)(void *, void *))
 {
 	while(head != NULL){
-		stf(head->value);
+		st = stf(st, head->value);
 		head = head->next;
 	}
+	return st;
 }
 
 void list_free(struct listitem *head, void(*myfree)(void *))
@@ -98,4 +99,20 @@ void list_free(struct listitem *head, void(*myfree)(void *))
 void list_free_ignore(void *p)
 {
 	(void)p;
+}
+
+void *list_to_array_iter(void *st, void *el)
+{
+	st = el;
+	return (void *)(((uintptr_t *)st)+1);
+}
+
+void *list_to_array(struct listitem *l, uint64_t *len)
+{
+	uint64_t leng = list_length(l);
+	if(len != NULL)
+		*len = leng;
+	void *r = safe_malloc(leng*sizeof(void *));
+	list_iterate(l, r, list_to_array_iter);
+	return r;
 }

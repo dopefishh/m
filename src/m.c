@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 		case c_update:
 			logmsg(info, "Updating db\n");
 			update_db(db);
-			index_db(db, command.dbindex);
+			free_db_index(index_db(db, command.dbindex));
 			save_db(db, command.database, command.verbosedb);
 			break;
 		case c_search:

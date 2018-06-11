@@ -8,8 +8,10 @@
 #include "../list.h"
 
 struct shadow_db {
-	uint64_t num;
+	uint64_t numkeys;
 	char **keys;
+	uint64_t num;
+	struct shadow_db_fork *root;
 };
 
 struct shadow_db_fork {
@@ -24,4 +26,6 @@ struct shadow_db_fork {
 };
 
 struct shadow_db *index_db(struct db *, struct listitem *);
+void free_db_index(struct shadow_db *);
+
 #endif

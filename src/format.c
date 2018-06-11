@@ -43,7 +43,7 @@ void fmt_free(struct listitem * fmt)
 {
 	list_free(fmt, &fmt_atom_free);
 }
-void rewrite(void *i);
+void *rewrite(void *st, void *i);
 
 void nargfun(char *funname, struct listitem *funargs, int nargs, ...)
 {
@@ -57,7 +57,7 @@ void nargfun(char *funname, struct listitem *funargs, int nargs, ...)
 		char **lit = va_arg(valist, char **);
 
 		while(!a->islit)
-			rewrite(a);
+			rewrite(NULL, a);
 
 		*lit = a->atom.lit;
 		funargs = funargs->next;
@@ -80,11 +80,9 @@ int64_t min(int64_t a, int64_t b)
 	return a > b ? b : a;
 }
 
-
-FILE *gof;
-struct db_file *gdf;
-void rewrite(void *i)
+void *rewrite(void *st, void *i)
 {
+	struct db_file *gdf = (struct db_file *)st;
 	struct fmt_atom *item = (struct fmt_atom *)i;
 	if(!item->islit){
 		item->islit = true;
@@ -162,25 +160,23 @@ void rewrite(void *i)
 		free(funname);
 		list_free(funargs, &fmt_atom_free);
 	}
+	return st;
 }
 
-void print(void *i)
+void *print(void *st, void *i)
 {
 	struct fmt_atom *item = (struct fmt_atom *)i;
 	if(item->islit){
-		safe_fprintf(gof, "%s", item->atom.lit);
+		safe_fprintf((FILE *)st, "%s", item->atom.lit);
 	} else {
 		die("Huh, rewriting didn't succeed?\n");
 	}
+	return st;
 }
 
 void fformat(FILE *f, struct listitem *l, struct db_file *df)
 {
-	gof = f;
-	gdf = df;
-	list_iterate(l, rewrite);
-	list_iterate(l, print);
-	safe_fprintf(gof, "\n");
-	gof = NULL;
-	gdf = NULL;
+	list_iterate(l, (void *)df, rewrite);
+	list_iterate(l, (void *)f, print);
+	safe_fprintf(f, "\n");
 }
