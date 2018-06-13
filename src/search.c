@@ -42,7 +42,7 @@ void search_db(struct db * db)
 	logmsg(warn, "Searching for %s\n", command.fields.search_opts.query);
 
 	//Naive searching:
-	struct listitem *result = iterate_db(db->root, NULL, &search);
+	struct listitem *result = db_iterate(db->root, NULL, &search);
 
 	//Print
 	for(struct listitem *i = result; i != NULL; i = i->next){

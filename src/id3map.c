@@ -49,15 +49,14 @@ void id3map_add_multiple_from_string(char *id)
 	}
 }
 
-void *equalid;
-char *equaltxxx;
-bool id3map_equal(void *a)
+bool id3map_equal(void *a, void *b)
 {
 	struct id3map *m = (struct id3map *)a;
-	if(m->txxx == NULL){
-		return strcmp(m->id, equalid) == 0;
+	struct id3map *n = (struct id3map *)b;
+	if(n->txxx == NULL && m->txxx == NULL){
+		return strcmp(n->id, m->id) == 0;
 	} else {
-		return equaltxxx != NULL && strcmp(m->txxx, equaltxxx) == 0;
+		return m->txxx != n->txxx && strcmp(m->txxx, n->txxx) == 0;
 	}
 }
 
@@ -79,9 +78,10 @@ void id3map_add(char *id, char *key, char *txxx)
 char *id3map_get(char *id, char *txxx)
 {
 //	logmsg(debug, "Getting id3map entry for %s\n", id);
-	equalid = id;
-	equaltxxx = txxx;
-	struct id3map *r = list_find(head, &id3map_equal, NULL);
+	struct id3map m;
+	strncpy(m.id, id, 4);
+	m.txxx = txxx;
+	struct id3map *r = list_find(head, (void *)&m, &id3map_equal, NULL);
 	return r == NULL ? id : r->key;
 }
 

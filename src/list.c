@@ -26,12 +26,12 @@ struct listitem *list_prepend(struct listitem *head, void *value)
 	return r;
 }
 
-void *list_find(struct listitem *head, bool(*pred)(void *), uint32_t *index)
+void  *list_find(struct listitem *head, void *st, bool(*pred)(void *, void *), uint32_t *index)
 {
 	struct listitem *r = head;
 	uint32_t in = 0;
 	while(r != NULL){
-		if(pred(r->value)){
+		if(pred(st, r->value)){
 			if(index != NULL)
 				*index = in;
 			return r->value;

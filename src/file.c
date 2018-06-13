@@ -98,6 +98,8 @@ bool file_tag_split_eq(char *k, char **key, char **value)
 
 char *file_tag_find(struct db_file *f, char *key)
 {
+//	if(f == NULL)
+//		die("help, file_tag_find called with a NULL pointer\n");
 	if(f->tags == NULL)
 		return NULL;
 	struct db_tag t = {.key=key, .value=NULL};

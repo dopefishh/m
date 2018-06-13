@@ -6,7 +6,7 @@ LDFLAGS?=-lm
 
 ifdef DEBUG
 CFLAGS+=-g
-YFLAGS+=-t
+#YFLAGS+=-t
 else
 CFLAGS+=-O3
 endif
