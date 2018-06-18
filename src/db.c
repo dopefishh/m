@@ -307,11 +307,9 @@ void free_db(struct db *db)
 
 void *db_iterate(struct db_entry *db, void *st, void *(*stf)(void *, struct db_file *))
 {
-	//In the directories we recurse
-	for(uint64_t i = 0; i<db->ndir; i++)
-		st = db_iterate(&(db->dirs[i]), st, stf);
-	//In the files we apply the state function
-	for(uint64_t file = 0; file<db->nfile; file++)
-		st = stf(st, &(db->files[file]));
+	for(uint64_t i = 0; i < db->ndir; i++)
+		st = db_iterate(db->dirs+i, st, stf);
+	for(uint64_t i = 0; i < db->nfile; i++)
+		st = stf(st, db->files+i);
 	return st;
 }

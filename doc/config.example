@@ -18,9 +18,9 @@ searchkeys = ARTIST,ALBUM
 
 # Database index. There can be multiple. It describes the structure of the
 # database in which is searched. See Print Format for the format specificaiton.
-databaseindex = $tag{artist}
-databaseindex = $tag{album}
-databaseindex = $tag{date}
+databaseindex = $tag{artist,ARTIST}
+databaseindex = $tag{album,ALBUM}
+databaseindex = $tag{date,DATE}
 
 # Print format
 # Escaping can be done with \. E.g. \$ prints a literal $

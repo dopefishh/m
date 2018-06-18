@@ -101,18 +101,13 @@ void list_free_ignore(void *p)
 	(void)p;
 }
 
-void *list_to_array_iter(void *st, void *el)
-{
-	st = el;
-	return (void *)(((uintptr_t *)st)+1);
-}
-
 void *list_to_array(struct listitem *l, uint64_t *len)
 {
 	uint64_t leng = list_length(l);
 	if(len != NULL)
 		*len = leng;
-	void *r = safe_malloc(leng*sizeof(void *));
-	list_iterate(l, r, list_to_array_iter);
+	void **r = safe_malloc(leng*sizeof(void *));
+	for(leng = 0; l != NULL; l = l->next)
+		r[leng++] = l->value;
 	return r;
 }

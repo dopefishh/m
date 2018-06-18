@@ -10,7 +10,7 @@
 
 struct shadow_dbl {
 	uint64_t numkeys;
-	struct listitem *keys;
+	struct listitem **keys;
 	uint64_t num;
 	struct listitem *forks;
 };
@@ -35,35 +35,34 @@ bool pred(void *a, void *b)
 void *index_db_fun(void *st, struct db_file *f)
 {
 	struct shadow_dbl *sdbl = (struct shadow_dbl *)st;
-	for(uint16_t i = 0; i<sdbl->numkeys; i++){
-		char *value = sformat(&sdbl->keys[i], f);
+	for(uint16_t i = 0; i < sdbl->numkeys; i++){
+		char *value = sformat(sdbl->keys[i], f);
 		void *item = list_find(sdbl->forks, (void *)value, pred, NULL);
 		if(item == NULL){
+			logmsg(debug, "append\n");
 			//append
 		} else {
+			logmsg(debug, "don't append\n");
 			//don't append
 		}
-
 	}
 
-	return (void *)sdbl;
+	return st;
 }
 
 struct shadow_db *index_db(struct db *db, struct listitem *keys)
 {
-//	struct shadow_db *sdb = safe_malloc(sizeof(struct shadow_db));
-//	sdb->keys = list_to_array(keys, &(sdb->numkeys));
-//	logmsg(warn, "%lu keys\n", sdb->numkeys);
-//	logmsg(debug, "Index the database\n");
-//
-//	//Make an intermediate linked list tree
-//	struct shadow_dbl *sdbl = safe_malloc(sizeof(struct shadow_dbl));
-//	sdbl->num = 0;
-//	sdbl->forks = NULL;
-//	sdbl->numkeys = sdb->numkeys;
-//	sdbl->keys = sdb->keys;
-//
-//	sdbl = db_iterate(db->root, sdbl, &index_db_fun);
+	struct shadow_db *sdb = safe_malloc(sizeof(struct shadow_db));
+	sdb->keys = list_to_array(keys, &sdb->numkeys);
+
+	//Make an intermediate linked list tree
+	struct shadow_dbl *sdbl = safe_malloc(sizeof(struct shadow_dbl));
+	sdbl->num = 0;
+	sdbl->forks = NULL;
+	sdbl->numkeys = sdb->numkeys;
+	sdbl->keys = sdb->keys;
+
+	sdbl = db_iterate(db->root, sdbl, &index_db_fun);
 
 	//Convert to array
 

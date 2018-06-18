@@ -20,8 +20,9 @@ struct fmt_atom {
 };
 
 struct listitem *parse_fmt_atoms(char *);
-void fformat(FILE *, struct listitem *, struct db_file *);
+void  fformat(FILE *, struct listitem *, struct db_file *);
 char *sformat(struct listitem *, struct db_file *);
+void fprint(FILE *, struct listitem *);
 
 void fmt_free(struct listitem *);
 

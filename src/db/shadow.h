@@ -9,7 +9,7 @@
 
 struct shadow_db {
 	uint64_t numkeys;
-	struct listitem *keys;
+	struct listitem **keys;
 	uint64_t num;
 	struct shadow_db_fork *root;
 };
