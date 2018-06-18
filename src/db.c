@@ -266,7 +266,7 @@ void print_db_entry(int indent, struct db_entry *e, FILE *f)
 		for(int j = 0; j<indent+1; j++)
 			safe_fputs("  ", f);
 		safe_fprintf(f, "| %s: ", e->files[i].path);
-		fformat(f, command.fmt, &e->files[i]);
+		fformat(f, command.fmt, e->files+i);
 	}
 }
 

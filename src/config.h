@@ -17,7 +17,9 @@ struct mcommand {
 	char *logfile;
 	bool verbosedb;
 	bool fixfilesystem;
+	//list of fmt_atom
 	struct listitem *fmt;
+	//list of list of fmt_atom
 	struct listitem *dbindex;
 #ifdef USE_MP3
 	char *id3mapping;

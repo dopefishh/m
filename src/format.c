@@ -80,12 +80,16 @@ int64_t min(int64_t a, int64_t b)
 	return a > b ? b : a;
 }
 
-//struct db_file *gdf;
-void *rewrite(void *st, void *i)
+int64_t max(int64_t a, int64_t b)
+{
+	return a < b ? b : a;
+}
+
+//void  *list_iterate(struct listitem *, void *, void *(*)(void *st, void *el));
+void *rewrite(void *st, void *el)
 {
 	struct db_file *gdf = (struct db_file *)st;
-	struct fmt_atom *item = (struct fmt_atom *)i;
-	fprintf(stderr, "rewrite: %p %p\n", (void *)gdf, (void *)item);
+	struct fmt_atom *item = (struct fmt_atom *)el;
 	if(!item->islit){
 		item->islit = true;
 		char *funname = item->atom.fun.name;
@@ -116,7 +120,7 @@ void *rewrite(void *st, void *i)
 			if(padwidth < 0)
 				die("Padding width must be positive");
 
-			item->atom.lit = safe_malloc(min(strlen(str),padwidth)+1);
+			item->atom.lit = safe_malloc(max(strlen(str),padwidth)+1);
 			strcpy(item->atom.lit, str);
 
 			int64_t i = 0, padc = 0, padmod = strlen(padchar);
@@ -132,10 +136,11 @@ void *rewrite(void *st, void *i)
 			int64_t padwidth = intarg(width);
 			if(padwidth < 0)
 				die("Padding width must be positive");
-			item->atom.lit = safe_malloc(min(strlen(str),padwidth)+1);
+			item->atom.lit = safe_malloc(max(strlen(str),padwidth)+1);
 
-			uint64_t i = 0, padc = 0, padmod = strlen(padchar);
-			for(; i<padwidth-strlen(str); i++)
+			uint64_t i = 0, padc = 0, padmod = strlen(padchar),
+				lim = padwidth-strlen(str);
+			for(; i<lim; i++)
 				item->atom.lit[i] = padchar[padc++%padmod];
 			strcpy(item->atom.lit + i, str);
 		} else if(strcmp(funname, "plus") == 0){
