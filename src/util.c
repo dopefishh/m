@@ -316,7 +316,7 @@ char *resolve_tilde(const char *path)
 		head = globbuf.gl_pathv[0];
 		result = calloc(strlen(head) +
 			(tail ? strlen(tail) : 0) + 1, 1);
-		strncpy(result, head, strlen(head));
+		strncpy(result, head, strlen(head)+1);
 		if (tail)
 			strncat(result, tail, strlen(tail));
 	}

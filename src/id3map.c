@@ -69,7 +69,7 @@ void id3map_add(char *id, char *key, char *txxx)
 	}
 	//Add
 	struct id3map *r = safe_malloc(sizeof(struct id3map));
-	strncpy(r->id, id, 5);
+	strncpy(r->id, id, 4);
 	r->key = safe_strdup(key);
 	r->txxx = txxx == NULL ? NULL : safe_strdup(txxx);
 	head = list_prepend(head, (void *)r);
