@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "../config.h"
 #include "config.h"
 #include "db.h"
 #include "db/shadow.h"

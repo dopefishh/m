@@ -24,10 +24,9 @@ These options can be set and unset in `conf.mk`
 - `libid3tag` (for mp3 support).
 
 ## Compilation
-- Specific settings for enabling or disabling formats can be controllen in
-  `conf.mk`.
-- Build by running `make`
-- Install by running `make install` (not implemented yet)
+- Generate the autotools files with `autoreconf --install`
+- Run `./configure` (`./configure --help` to see all options)
+- Run `make`
 
 ## Usage
 ### Command line

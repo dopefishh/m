@@ -1,19 +1,38 @@
 AC_INIT([m], [0.1], [m@martlubbers.net])
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([foreign -Wall -Werror])
+AM_INIT_AUTOMAKE([subdir-objects foreign -Wall -Werror -Wno-portability])
 
+# Flac support
 AC_ARG_ENABLE([flac], AS_HELP_STRING([--disable-flac], [Disable flac support]))
-AS_IF([test "x$with_flac" != "xno"], [
+AM_CONDITIONAL([USE_FLAC], [test "x$with_flac" != "xno"])
+AM_COND_IF([USE_FLAC], [
 	PKG_CHECK_MODULES([FLAC], [flac])
-	LDFLAGS="$LDFLAGS $FLAC_LIBS"
-	CFLAGS="$CFLAGS $FLAC_CFLAGS"
+	AC_DEFINE([USE_FLAC], [], [Flac support])
 ])
+
+# Opus support
 AC_ARG_ENABLE([opus], AS_HELP_STRING([--disable-opus], [Disable opus support]))
-AS_IF([test "x$with_opus" != "xno"], [PKG_CHECK_MODULES([OPUS], [opusfile])])
+AM_CONDITIONAL([USE_OPUS], [test "x$with_opus" != "xno"])
+AM_COND_IF([USE_OPUS], [
+	PKG_CHECK_MODULES([OPUS], [opusfile])
+	AC_DEFINE([USE_OPUS], [], [Opus support])
+])
+
+# Ogg support
 AC_ARG_ENABLE([ogg], AS_HELP_STRING([--disable-ogg], [Disable ogg support]))
-AS_IF([test "x$with_ogg" != "xno"], [PKG_CHECK_MODULES([OGG], [vorbisfile])])
+AM_CONDITIONAL([USE_OGG], [test "x$with_ogg" != "xno"])
+AM_COND_IF([USE_OGG], [
+	PKG_CHECK_MODULES([OGG], [vorbisfile])
+	AC_DEFINE([USE_OGG], [], [Ogg support])
+])
+
+# MP3 support
 AC_ARG_ENABLE([mp3], AS_HELP_STRING([--disable-mp3], [Disable mp3 support]))
-AS_IF([test "x$with_mp3" != "xno"], [PKG_CHECK_MODULES([MP3], [id3tag])])
+AM_CONDITIONAL([USE_MP3], [test "x$with_mp3" != "xno"])
+AM_COND_IF([USE_MP3], [
+	PKG_CHECK_MODULES([MP3], [id3tag])
+	AC_DEFINE([USE_MP3], [], [MP3 support])
+])
 
 # Checks for libraries.
 AC_PROG_CC
