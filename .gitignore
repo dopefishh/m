@@ -1,5 +1,8 @@
 # object files
 *.o
+*.lo
+*.la
+*.log
 
 # flex+bison intermediate files
 *.tab.[ch]
@@ -23,4 +26,8 @@ config.h.in
 config.log
 config.status
 configure
+configure.scan
+libtool
 stamp-h1
+m4/libtool.m4
+m4/lt*

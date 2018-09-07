@@ -26,8 +26,21 @@ void safe_free(int count, ...);
 char *safe_strcat(int count, ...);
 char *safe_strdup(const char *s);
 char *safe_strndup(const char *s, size_t n);
+
+/*
+ * Trims the whitespace off the string in-place on both sides.
+ */
 char *trim(char *s);
+
+/*
+ * This trims off given characters from the end of the string in-place.
+ */
 char *rtrimc(char *s, char c);
+
+/*
+ * Retrieves a line from the given file. If the newline flag is set, escaped
+ * newlines are inserted in the string.
+ */
 char *get_line(FILE *, bool);
 
 // File

@@ -109,9 +109,9 @@ char *trim(char *s)
 
 char *rtrimc(char *s, char c)
 {
-	size_t i = strlen(s)-1;
-	while(c == s[i] && i>0)
-		s[i--] = '\0';
+	size_t i = strlen(s);
+	while(i > 0 && c == s[--i])
+		s[i] = '\0';
 	return s;
 }
 

@@ -29,6 +29,63 @@ START_TEST(test_util_trim)
 }
 END_TEST
 
+START_TEST(test_util_rtrimc)
+{
+	str_eq_msg("",   rtrimc(safe_strdup(""), ' '));
+	str_eq_msg("",   rtrimc(safe_strdup(""), '\0'));
+	str_eq_msg("",   rtrimc(safe_strdup(""), 'c'));
+	str_eq_msg("ab", rtrimc(safe_strdup("abc"), 'c'));
+	str_eq_msg("ab", rtrimc(safe_strdup("abcc"), 'c'));
+	str_eq_msg("ab", rtrimc(safe_strdup("abccc"), 'c'));
+	str_eq_msg("abcd", rtrimc(safe_strdup("abcdc"), 'c'));
+
+}
+END_TEST
+
+#define TEST_GET_LINE(str, targ, fn, nl) {\
+	FILE *_f = fopen(fn, "w");\
+	fputs(str, _f);\
+	fclose(_f);\
+	_f = fopen(fn, "r");\
+	char *_r = get_line(_f, nl);\
+	ck_assert_msg(strcmp(_r, targ) == 0, "get_line(nl=%s) failed got '%s' expected '%s'\n", nl ? "true" : "false", _r, targ);\
+	free(_r);\
+	fclose(_f);\
+}
+START_TEST(test_util_get_line)
+{
+	char fn[] = "/tmp/m.XXXXXX";
+	int fd;
+	if((fd = mkstemp(fn)) == -1)
+		perrordie("mkstemp");
+	if(close(fd) == -1)
+		perrordie("close");
+
+	//empty line
+	TEST_GET_LINE("", "", fn, true);
+	TEST_GET_LINE("", "", fn, false);
+	TEST_GET_LINE("abc", "abc", fn, true);
+	TEST_GET_LINE("abc", "abc", fn, false);
+	TEST_GET_LINE("\n", "", fn, true);
+	TEST_GET_LINE("\n", "", fn, false);
+	TEST_GET_LINE("\nabc", "", fn, true);
+	TEST_GET_LINE("\nabc", "", fn, false);
+	TEST_GET_LINE("abc\n", "abc", fn, true);
+	TEST_GET_LINE("abc\n", "abc", fn, false);
+	TEST_GET_LINE("abc\ndef", "abc", fn, true);
+	TEST_GET_LINE("abc\ndef", "abc", fn, false);
+	TEST_GET_LINE("abc\\\ndef", "abc\ndef", fn, true);
+	TEST_GET_LINE("abc\\\ndef", "abcdef", fn, false);
+	TEST_GET_LINE("abc\\\ndef\n", "abc\ndef", fn, true);
+	TEST_GET_LINE("abc\\\ndef\n", "abcdef", fn, false);
+	TEST_GET_LINE("abc\\\ndef\nghi", "abc\ndef", fn, true);
+	TEST_GET_LINE("abc\\\ndef\nghi", "abcdef", fn, false);
+
+	if(unlink(fn) == -1)
+		perrordie("unlink");
+}
+END_TEST
+
 Suite *util_suite(void)
 {
 	Suite *s = suite_create("Util");
@@ -40,6 +97,14 @@ Suite *util_suite(void)
 	TCase *tc_trim = tcase_create("Trim");
 	tcase_add_test(tc_trim, test_util_trim);
 	suite_add_tcase(s, tc_trim);
+
+	TCase *tc_rtrimc = tcase_create("Rtrimc");
+	tcase_add_test(tc_rtrimc, test_util_rtrimc);
+	suite_add_tcase(s, tc_rtrimc);
+
+	TCase *tc_get_line = tcase_create("Get_line");
+	tcase_add_test(tc_rtrimc, test_util_get_line);
+	suite_add_tcase(s, tc_get_line);
 
 	return s;
 }
@@ -59,48 +124,8 @@ int main(void)
 	return (failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 //
-//#define TEST(name, str, targ, fn, nl) {\
-//	FILE *_f = fopen(fn, "w");\
-//	fputs(str, _f);\
-//	fclose(_f);\
-//	_f = fopen(fn, "r");\
-//	char *_r = get_line(_f, nl);\
-//	if(strcmp(_r, targ) != 0)\
-//		die("util:get_line(%s, %s) failed got '%s' expected '%s'\n", name, nl ? "true" : "false", _r, targ);\
-//	free(_r);\
-//	fclose(_f);\
-//}
 //
 //int main(void)
 //{
-//	char fn[] = "/tmp/m.XXXXXX";
-//	int fd;
-//	if((fd = mkstemp(fn)) == -1)
-//		perrordie("mkstemp");
-//	if(close(fd) == -1)
-//		perrordie("close");
-//
-//	//empty line
-//	TEST("eof", "", "", fn, true);
-//	TEST("eof", "", "", fn, false);
-//	TEST("abc_eof", "abc", "abc", fn, true);
-//	TEST("abc_eof", "abc", "abc", fn, false);
-//	TEST("nl", "\n", "", fn, true);
-//	TEST("nl", "\n", "", fn, false);
-//	TEST("nl_bog", "\nabc", "", fn, true);
-//	TEST("nl_bog", "\nabc", "", fn, false);
-//	TEST("bog_nl", "abc\n", "abc", fn, true);
-//	TEST("bog_nl", "abc\n", "abc", fn, false);
-//	TEST("bog_nl_bog", "abc\ndef", "abc", fn, true);
-//	TEST("bog_nl_bog", "abc\ndef", "abc", fn, false);
-//	TEST("bog_nle_bog_eof", "abc\\\ndef", "abc\ndef", fn, true);
-//	TEST("bog_nle_bog_eof", "abc\\\ndef", "abcdef", fn, false);
-//	TEST("bog_nle_bog_nl", "abc\\\ndef\n", "abc\ndef", fn, true);
-//	TEST("bog_nle_bog_nl", "abc\\\ndef\n", "abcdef", fn, false);
-//	TEST("bog_nle_bog_nl_bog", "abc\\\ndef\nghi", "abc\ndef", fn, true);
-//	TEST("bog_nle_bog_nl_bog", "abc\\\ndef\nghi", "abcdef", fn, false);
-//
-//	if(unlink(fn) == -1)
-//		perrordie("unlink");
 //	return 0;
 //}
