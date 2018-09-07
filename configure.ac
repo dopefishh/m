@@ -2,6 +2,9 @@ AC_INIT([m], [0.1], [m@martlubbers.net])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([subdir-objects foreign -Wall -Werror -Wno-portability])
 
+LT_INIT
+AC_CONFIG_MACRO_DIRS([m4])
+
 # Flac support
 AC_ARG_ENABLE([flac], AS_HELP_STRING([--disable-flac], [Disable flac support]))
 AM_CONDITIONAL([USE_FLAC], [test "x$with_flac" != "xno"])
@@ -39,6 +42,8 @@ AC_PROG_CC
 AC_PROG_YACC
 AC_PROG_LEX
 
+PKG_CHECK_MODULES([CHECK], [check >= 0.9.4])
+
 # Checks for header files.
 AC_CHECK_HEADERS([inttypes.h])
 AC_CHECK_HEADERS([stddef.h])
@@ -66,6 +71,6 @@ AC_CHECK_FUNCS([realloc])
 
 # Output files.
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile src/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile man/Makefile tests/Makefile])
 
 AC_OUTPUT

@@ -1,4 +1,6 @@
 bin_PROGRAMS = m
+noinst_LTLIBRARIES = libm.la
+
 m_SOURCES = config.c config/print.c config/search.c config/update.c \
 	db.c db/io.c db/shadow.c \
 	exclude.c \
@@ -26,6 +28,10 @@ endif
 m_CFLAGS = -Wall -Wpedantic -Wextra -D_DEFAULT_SOURCE \
 	$(FLAC_CFLAGS) $(OPUS_CFLAGS) $(OGG_CFLAGS) $(MP3_CFLAGS)
 m_LDADD = -lm $(FLAC_LIBS) $(OPUS_LIBS) $(OGG_LIBS) $(MP3_LIBS)
+
+libm_la_SOURCES = $(m_SOURCES)
+libm_la_LIBADD = $(m_LDADD)
+libm_la_CFLAGS = $(m_CFLAGS)
 
 %.tab.c: %.y
 	$(YACC.y) -b $(basename $<) -d -Dapi.prefix={$(notdir $(basename $<))yy} $<

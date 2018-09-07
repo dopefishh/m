@@ -97,11 +97,13 @@ char *safe_strndup(const char *s, size_t n)
 
 char *trim(char *s)
 {
+	if(s == NULL)
+		return NULL;
 	while(isspace(s[0]))
 		s++;
-	size_t i = strlen(s)-1;
-	while(isspace(s[i]) && i>0)
-		s[i--] = '\0';
+	ssize_t i = strlen(s);
+	while(i>0 && isspace(s[--i]))
+		s[i] = '\0';
 	return s;
 }
 
