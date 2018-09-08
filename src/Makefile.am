@@ -27,10 +27,10 @@ endif
 
 m_CFLAGS = -Wall -Wpedantic -Wextra -D_DEFAULT_SOURCE \
 	$(FLAC_CFLAGS) $(OPUS_CFLAGS) $(OGG_CFLAGS) $(MP3_CFLAGS)
-m_LDADD = -lm $(FLAC_LIBS) $(OPUS_LIBS) $(OGG_LIBS) $(MP3_LIBS)
+m_LDADD = $(FLAC_LIBS) $(OPUS_LIBS) $(OGG_LIBS) $(MP3_LIBS) -lm 
 
 libm_la_SOURCES = $(m_SOURCES)
-libm_la_LIBADD = $(m_LDADD)
+libm_la_LIBADD = $(m_LDADD) -lm
 libm_la_CFLAGS = $(m_CFLAGS)
 
 %.tab.c: %.y
