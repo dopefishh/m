@@ -97,19 +97,21 @@ char *safe_strndup(const char *s, size_t n)
 
 char *trim(char *s)
 {
+	if(s == NULL)
+		return NULL;
 	while(isspace(s[0]))
 		s++;
-	size_t i = strlen(s)-1;
-	while(isspace(s[i]) && i>0)
-		s[i--] = '\0';
+	ssize_t i = strlen(s);
+	while(i>0 && isspace(s[--i]))
+		s[i] = '\0';
 	return s;
 }
 
 char *rtrimc(char *s, char c)
 {
-	size_t i = strlen(s)-1;
-	while(c == s[i] && i>0)
-		s[i--] = '\0';
+	size_t i = strlen(s);
+	while(i > 0 && c == s[--i])
+		s[i] = '\0';
 	return s;
 }
 
@@ -302,24 +304,21 @@ bool path_exists(const char *path)
 char *resolve_tilde(const char *path)
 {
 	static glob_t globbuf;
-	char *head, *tail, *result = NULL;
+	char *tail, *result = NULL;
 
 	tail = strchr(path, '/');
-	head = strndup(path, tail ? (size_t)(tail - path) : strlen(path));
+	result = strndup(path, tail ? (size_t)(tail - path) : strlen(path));
 
-	int res = glob(head, GLOB_TILDE, NULL, &globbuf);
-	free(head);
+	int res = glob(result, GLOB_TILDE, NULL, &globbuf);
+	free(result);
 	if (res == GLOB_NOMATCH || globbuf.gl_pathc != 1) {
 		result = safe_strdup(path);
 	} else if (res != 0) {
-		die("glob failed\n");
+		perrordie("glob failed\n");
+	} else if (tail) {
+		result = safe_strcat(2, globbuf.gl_pathv[0], tail);
 	} else {
-		head = globbuf.gl_pathv[0];
-		result = calloc(strlen(head) +
-			(tail ? strlen(tail) : 0) + 1, 1);
-		strncpy(result, head, strlen(head));
-		if (tail)
-			strncat(result, tail, strlen(tail));
+		result = safe_strdup(globbuf.gl_pathv[0]);
 	}
 	globfree(&globbuf);
 

@@ -1,8 +1,42 @@
+# object files
 *.o
-*.a
+*.lo
+*.la
+*.log
+
+# flex+bison intermediate files
 *.tab.[ch]
 *.yy.[ch]
+
+# program and distributions
 m
-testdir
 m.1.gz
 m-*.tar.gz
+
+# man pages
+*.1
+
+# autotools
+*~
+.deps
+.libs
+.dirstamp
+Makefile
+Makefile.in
+aclocal.m4
+autom4te.cache/
+build-aux/
+config.h
+config.h.in
+config.log
+config.status
+configure
+configure.scan
+libtool
+stamp-h1
+m4/libtool.m4
+m4/lt*
+
+# check
+*.trs
+tests/check*[^c]

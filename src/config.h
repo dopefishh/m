@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "list.h"
+#include "../config.h"
 
 #define ASSIGNFREE(a, v) {free(a); a = v;}
 
