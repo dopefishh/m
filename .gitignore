@@ -16,6 +16,7 @@ m-*.tar.gz
 # autotools
 *~
 .deps
+.libs
 .dirstamp
 Makefile
 Makefile.in
@@ -35,3 +36,4 @@ m4/lt*
 
 # check
 *.trs
+tests/check*[^c]
