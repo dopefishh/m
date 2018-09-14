@@ -13,6 +13,9 @@ m
 m.1.gz
 m-*.tar.gz
 
+# man pages
+*.1
+
 # autotools
 *~
 .deps

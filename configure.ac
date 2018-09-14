@@ -71,6 +71,6 @@ AC_CHECK_FUNCS([realloc])
 
 # Output files.
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile src/Makefile tests/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile tests/Makefile man/Makefile])
 
 AC_OUTPUT

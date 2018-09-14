@@ -73,14 +73,17 @@ static const char *optstring = \
 	"3:"  \
 	"e:";
 
-void version(FILE *out)
+void version(FILE *out, char *cmd)
 {
-	safe_fputs("``m'' Version 0.1\n", out);
+	if(cmd == NULL)
+		safe_fputs("``m'' Version 0.1\n", out);
+	else
+		safe_fprintf(out, "``m'' %s\n", cmd);
 }
 
 void usage(char *cmd, FILE *out, char *arg0)
 {
-	version(out);
+	version(out, cmd);
 	if(cmd == NULL){
 		fprintf(out,
 			"Usage: %s [OPTS] [COMMAND [COMMANDOPTS]]\n"
@@ -88,7 +91,7 @@ void usage(char *cmd, FILE *out, char *arg0)
 			"Options:\n"
 			"  -v,--verbose            Increase verbosity\n"
 			"  -s,--silent             Decrease verbosity\n"
-			"  -h,--help     [COMMAND] Print this help or the command specific\n"
+			"  -h,--help     COMMAND   Print this help or the command specific\n"
 			"  --version               Print the version\n"
 			"\n"
 			"  -c,--config      FILE   Use the specified config\n"
@@ -144,7 +147,7 @@ void parse_cli(int argc, char **argv)
 				rtrimc(resolve_tilde(optarg), '/'));
 			break;
 		case 'V':
-			version(stdout);
+			version(stdout, NULL);
 			exit(EXIT_SUCCESS);
 		case 'h':
 			usage(optarg, stdout, argv[0]);
