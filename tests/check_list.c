@@ -3,10 +3,9 @@
 #include "../src/util.h"
 #include "../src/list.h"
 
-void *match;
-bool find_eq(void *t)
+bool find_eq(void *a, void *b)
 {
-	return match == t;
+	return a == b;
 }
 
 START_TEST(test_list)
@@ -41,9 +40,7 @@ START_TEST(test_list)
 
 	//Find
 	uint32_t *idx;
-	match = (void *)42;
-	void *data = list_find(head, &find_eq, idx);
-
+	void *data = list_find(head, (void *)42, &find_eq, idx);
 
 //void  *list_find(struct listitem *, bool(*)(void *), uint32_t *);
 //struct listitem *list_delete(struct listitem *, uint32_t, void **);
