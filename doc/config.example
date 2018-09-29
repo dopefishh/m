@@ -41,7 +41,8 @@ databaseindex = $tag{date,DATE}
 #   Outputs the subtractions of a and b
 # - abs{a}
 #   Outputs the absolute value a
-format = $filepath{} -- $lpad{$tag{discnumber, nd},0,$plus{1,2}} - albumartist: $tag{albumartist, $tag{artist, Unknown artist}}\, title: $tag{title, Unknown title} $tag{bork, Borked}
+format = $tag{albumartist, unknown artist} $tag{album, unknown album}
+#format = $filepath{} -- $lpad{$tag{discnumber, nd},0,$plus{1,2}} - albumartist: $tag{albumartist, $tag{artist, Unknown artist}}\, title: $tag{title, Unknown title} $tag{bork, Borked}
 #format = $fallback{$tag{albumartist},$tag{artist}} - $tag{title}
 #format = literal - $noargs{} - $onearg{arg1}  - $twoarg{arg1,arg2} - $threearg{arg1,arg2, arg3}\
 #	$nested{$nested{}} - $nested{$nested1{abc}, $nested2{def, geg}}

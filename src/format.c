@@ -100,7 +100,6 @@ void *rewrite(void *st, void *el)
 			char *tag = NULL, *fallback = NULL;
 			nargfun(gdf, "tag", funargs, 2, &tag, &fallback);
 
-			logmsg(debug, "file_tag_find %p\n", gdf);
 			tag = file_tag_find(gdf, tag);
 			if(tag == NULL) {
 				tag = fallback;

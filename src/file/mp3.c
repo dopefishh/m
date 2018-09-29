@@ -131,7 +131,6 @@ void process_frame(struct id3_frame *fr, struct db_tag *tags, uint32_t *ti)
 	oldkey = key;
 	key = safe_strdup(id3map_get(fr->id, st ? key : NULL));
 	free(oldkey);
-//	logmsg(debug, "Found lookup from id3map: %s\n", key);
 
 	for(uint32_t i = oldti; i<*ti; i++)
 		tags[i].key = safe_strdup(key);

@@ -53,7 +53,9 @@ bool id3map_equal(void *a, void *b)
 {
 	struct id3map *m = (struct id3map *)a;
 	struct id3map *n = (struct id3map *)b;
-	if(n->txxx == NULL && m->txxx == NULL){
+	if(n->txxx != m->txxx){
+		return false;
+	} else if(n->txxx == NULL && m->txxx == NULL){
 		return strcmp(n->id, m->id) == 0;
 	} else {
 		return m->txxx != n->txxx && strcmp(m->txxx, n->txxx) == 0;
@@ -71,16 +73,14 @@ void id3map_add(char *id, char *key, char *txxx)
 	strncpy(r->id, id, 4);
 	r->key = safe_strdup(key);
 	r->txxx = txxx == NULL ? NULL : safe_strdup(txxx);
-	head = list_prepend(head, (void *)r);
+	head = list_prepend(head, r);
 }
 
 
 char *id3map_get(char *id, char *txxx)
 {
-//	logmsg(debug, "Getting id3map entry for %s\n", id);
-	struct id3map m;
+	struct id3map m = {.id={0}, .key=NULL, .txxx=txxx};
 	strncpy(m.id, id, 4);
-	m.txxx = txxx;
 	struct id3map *r = list_find(head, (void *)&m, &id3map_equal, NULL);
 	return r == NULL ? id : r->key;
 }

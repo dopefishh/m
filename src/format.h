@@ -19,6 +19,8 @@ struct fmt_atom {
 	bool islit;
 };
 
+typedef struct listitem * formatting;
+
 struct listitem *parse_fmt_atoms(char *);
 void  fformat(FILE *, struct listitem *, struct db_file *);
 char *sformat(struct listitem *, struct db_file *);
