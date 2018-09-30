@@ -67,6 +67,15 @@ size_t list_length(struct listitem *);
 void  *list_iterate(struct listitem *, void *, void *(*)(void *st, void *el));
 
 /**
+ * Clone a list
+ *
+ * @param head
+ * @param clone function
+ * @return head of cloned list
+ */
+struct listitem *list_clone(struct listitem *, void *(*)(void *));
+
+/**
  * Free the list and apply a free function on the elements
  *
  * @param head

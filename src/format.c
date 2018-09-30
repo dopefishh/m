@@ -27,21 +27,20 @@ struct listitem *parse_fmt_atoms(char *fmt)
 	return fmt_list;
 }
 
-void fmt_atom_free(void *vfmt)
+void fmt_atom_free(struct fmt_atom *fmt)
 {
-	struct fmt_atom *fmt = (struct fmt_atom *)vfmt;
 	if(fmt->islit){
 		free(fmt->atom.lit);
 	} else {
 		free(fmt->atom.fun.name);
-		list_free(fmt->atom.fun.args, &fmt_atom_free);
+		list_free(fmt->atom.fun.args, (void (*)(void *))&fmt_atom_free);
 	}
 	free(fmt);
 }
 
 void fmt_free(struct listitem * fmt)
 {
-	list_free(fmt, &fmt_atom_free);
+	list_free(fmt, (void (*)(void *))&fmt_atom_free);
 }
 void *rewrite(void *st, void *i);
 
@@ -165,15 +164,13 @@ void *rewrite(void *st, void *el)
 		}
 
 		free(funname);
-		list_free(funargs, &fmt_atom_free);
+		list_free(funargs, (void (*)(void *))&fmt_atom_free);
 	}
 	return st;
 }
 
-void *print(void *st, void *i)
+char *print(char *st, struct fmt_atom *item)
 {
-
-	struct fmt_atom *item = (struct fmt_atom *)i;
 	if(item->islit){
 		char *newst = safe_strcat(2, (char *)st, item->atom.lit);
 		free(st);
@@ -191,8 +188,24 @@ void fformat(FILE *f, struct listitem *l, struct db_file *df)
 	free(s);
 }
 
+struct fmt_atom *fmt_cloner(struct fmt_atom *a)
+{
+	struct fmt_atom *r = safe_malloc(sizeof(struct fmt_atom));
+	r->islit = a->islit;
+	if(a->islit){
+		r->atom.lit = safe_strdup(a->atom.lit);
+	} else {
+		r->atom.fun.name = safe_strdup(a->atom.fun.name);
+		r->atom.fun.args = list_clone(a->atom.fun.args, (void *(*)(void *))&fmt_cloner);
+	}
+	return r;
+}
+
 char *sformat(struct listitem *l, struct db_file *df)
 {
-	list_iterate(l, (void *)df, &rewrite);
-	return (char *)list_iterate(l, safe_strdup(""), print);
+	struct listitem *cl = list_clone(l, (void *(*)(void *))&fmt_cloner);
+	list_iterate(cl, (void *)df, &rewrite);
+	char *r = list_iterate(cl, safe_strdup(""), (void *(*)(void *, void *))&print);
+	list_free(cl, (void (*)(void *))&fmt_atom_free);
+	return r;
 }

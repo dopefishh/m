@@ -102,7 +102,7 @@ static inline void serialize_db_file(FILE *f, uint64_t indent, struct db_file *e
 		serialize_int(f, indent, "ntags", 0, verbose);
 		return;
 	}
-	serialize_int(f, indent, "ntags", e->ntags, verbose);
+	serialize_int(f, indent++, "ntags", e->ntags, verbose);
 	for(uint64_t i = 0; i<e->ntags; i++){
 		serialize_string(f, indent, "key", e->tags[i].key, verbose);
 		serialize_string(f, indent, "value", e->tags[i].value, verbose);

@@ -43,6 +43,7 @@ void log_shadow_db_forkl(enum loglevel l, struct shadow_db_forkl *fork, int inde
 		logmsg(l, " ");
 	logmsg(l, "value: %s ", fork->value);
 	if(fork->isfork){
+		logmsg(l, "isfork\n");
 		struct listitem *head = fork->data.forks;
 		while(head != NULL){
 			log_shadow_db_forkl(l, head->value, indent+1);
@@ -50,7 +51,7 @@ void log_shadow_db_forkl(enum loglevel l, struct shadow_db_forkl *fork, int inde
 		}
 	} else {
 		struct listitem *head = fork->data.leafs;
-		logmsg(l, "leafs\n");
+		logmsg(l, "isleafs\n");
 		while(head != NULL){
 			logmsg(l, "%s ", ((struct db_file *)head->value)->path);
 			head = head->next;
@@ -71,7 +72,6 @@ void *index_db_fun(void *st, struct db_file *f)
 {
 	struct shadow_dbl *sdbl = (struct shadow_dbl *)st;
 	logmsg(debug, "\nindex %s, numkeys: %lu\n", f->path, sdbl->numkeys);
-//	log_shadow_dbl(debug, sdbl);
 
 	struct shadow_db_forkl *curfork = sdbl->rootfork;
 	struct shadow_db_forkl *tfork;
@@ -100,6 +100,7 @@ void *index_db_fun(void *st, struct db_file *f)
 	logmsg(debug, "fork to add it to: %s, isfork: %s\n", curfork->value, curfork->isfork ? "true" : "false");
 	curfork->isfork = false;
 	curfork->data.leafs = list_prepend(curfork->data.leafs, f);
+	logmsg(debug, "fork has now %lu leafs\n", list_length(curfork->data.leafs));
 
 	return st;
 }
@@ -123,6 +124,7 @@ struct shadow_db *index_db(struct db *db, struct listitem *keys)
 	logmsg(debug, "numkeys: %lu\n", sdb->numkeys);
 
 	sdbl = db_iterate(db->root, sdbl, &index_db_fun);
+	log_shadow_dbl(debug, sdbl);
 
 	//Convert to array
 

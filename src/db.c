@@ -38,7 +38,6 @@ struct db *init_db()
 	r->last_modified = safe_time(&r->initialized);
 	r->version = M_DB_VERSION;
 	r->rootpath = safe_strdup(command.libraryroot);
-	//Parse root
 	r->root = safe_calloc(1, sizeof(struct db_entry));
 	r->root->dir = safe_strdup("/");
 	return r;
@@ -289,6 +288,8 @@ void print_db(struct db *db, FILE *f)
 
 	print_db_entry(0, db->root, f);
 }
+
+
 
 void free_dbentry(struct db_entry e)
 {

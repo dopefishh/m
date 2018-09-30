@@ -85,6 +85,19 @@ void *list_iterate(struct listitem *head, void *st, void *(*stf)(void *, void *)
 	return st;
 }
 
+struct listitem *list_clone(struct listitem *head, void *(*cf)(void *))
+{
+	struct listitem *nhead = NULL, *ntail = NULL;
+	while(head != NULL){
+		ntail = list_append(ntail, cf(head->value));
+		if(nhead == NULL){
+			nhead = ntail;
+		}
+		head = head->next;
+	}
+	return nhead;
+}
+
 void list_free(struct listitem *head, void(*myfree)(void *))
 {
 	struct listitem *t;
