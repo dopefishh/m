@@ -124,7 +124,6 @@ struct shadow_db *index_db(struct db *db, struct listitem *keys)
 	logmsg(debug, "numkeys: %lu\n", sdb->numkeys);
 
 	sdbl = db_iterate(db->root, sdbl, &index_db_fun);
-	log_shadow_dbl(debug, sdbl);
 
 	//Convert to array
 

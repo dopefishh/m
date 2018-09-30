@@ -33,14 +33,14 @@ void fmt_atom_free(struct fmt_atom *fmt)
 		free(fmt->atom.lit);
 	} else {
 		free(fmt->atom.fun.name);
-		list_free(fmt->atom.fun.args, (void (*)(void *))&fmt_atom_free);
+		list_free(fmt->atom.fun.args, (list_free_fun)&fmt_atom_free);
 	}
 	free(fmt);
 }
 
 void fmt_free(struct listitem * fmt)
 {
-	list_free(fmt, (void (*)(void *))&fmt_atom_free);
+	list_free(fmt, (list_free_fun)&fmt_atom_free);
 }
 void *rewrite(void *st, void *i);
 
@@ -164,7 +164,7 @@ void *rewrite(void *st, void *el)
 		}
 
 		free(funname);
-		list_free(funargs, (void (*)(void *))&fmt_atom_free);
+		list_free(funargs, (list_free_fun)&fmt_atom_free);
 	}
 	return st;
 }
@@ -196,16 +196,16 @@ struct fmt_atom *fmt_cloner(struct fmt_atom *a)
 		r->atom.lit = safe_strdup(a->atom.lit);
 	} else {
 		r->atom.fun.name = safe_strdup(a->atom.fun.name);
-		r->atom.fun.args = list_clone(a->atom.fun.args, (void *(*)(void *))&fmt_cloner);
+		r->atom.fun.args = list_clone(a->atom.fun.args, (list_clone_fun)&fmt_cloner);
 	}
 	return r;
 }
 
 char *sformat(struct listitem *l, struct db_file *df)
 {
-	struct listitem *cl = list_clone(l, (void *(*)(void *))&fmt_cloner);
+	struct listitem *cl = list_clone(l, (list_clone_fun)&fmt_cloner);
 	list_iterate(cl, (void *)df, &rewrite);
-	char *r = list_iterate(cl, safe_strdup(""), (void *(*)(void *, void *))&print);
-	list_free(cl, (void (*)(void *))&fmt_atom_free);
+	char *r = list_iterate(cl, safe_strdup(""), (list_iter_fun)&print);
+	list_free(cl, (list_free_fun)&fmt_atom_free);
 	return r;
 }

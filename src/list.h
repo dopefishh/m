@@ -5,6 +5,10 @@
 #include <stdint.h>
 #include <stddef.h>
 
+typedef void (*list_free_fun) (void *);
+typedef void *(*list_clone_fun) (void *);
+typedef void *(*list_iter_fun) (void *, void *);
+
 struct listitem {
 	void *value;
 	struct listitem *next;
