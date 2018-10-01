@@ -16,7 +16,7 @@ struct shadow_db_fork {
 	bool isfork;
 	uint64_t num;
 	union {
-		shadow_db_fork_list *forks;
+		struct shadow_db_fork *forks;
 		db_file_list *leafs;
 	} data;
 };

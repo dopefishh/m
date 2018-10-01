@@ -146,13 +146,31 @@ struct shadow_db *index_db(struct db *db, struct listitem *keys)
 
 	//Convert root node
 	struct shadow_db_fork *f = convert_listfork_to_array(&sdbl->root);
-	sdb->root = *f;
+	sdb->root.value = f->value;
+	sdb->root.isfork = f->isfork;
+	if(sdb->root.isfork)
+		sdb->root.data.forks = f->data.forks;
+	else
+		sdb->root.data.leafs = f->data.leafs;
 	free(f);
 	free(sdbl);
 	return sdb;
 }
 
+void free_db_fork(struct shadow_db_fork *f)
+{
+	free(f->value);
+	if(f->isfork){
+		for(uint64_t i = 0; i<f->num; i++)
+			free_db_fork(f->data.forks+i);
+		free(f->data.forks);
+	} else {
+		free(f->data.leafs);
+	}
+}
+
 void free_db_index(struct shadow_db *sdb)
 {
-	(void)sdb;
+	free_db_fork(&sdb->root);
+	safe_free(2, sdb->keys, sdb);
 }
