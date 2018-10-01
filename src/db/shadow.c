@@ -8,16 +8,8 @@
 #include "../log.h"
 #include "../util.h"
 
-typedef struct listitem * db_file_list;
-typedef struct listitem * shadow_db_forkl_list;
-
-struct shadow_dbl {
-	// Number of keys
-	uint64_t numkeys;
-	// Array of formatlists
-	formatting *keys;
-	struct shadow_db_forkl *rootfork;
-};
+typedef struct listitem db_file_list;
+typedef struct listitem shadow_db_forkl_list;
 
 struct shadow_db_forkl {
 	// Formatted value
@@ -26,9 +18,17 @@ struct shadow_db_forkl {
 	bool isfork;
 	//isfork ? list of shadow_db_forkl : list of db_file
 	union {
-		shadow_db_forkl_list forks;
-		db_file_list leafs;
+		shadow_db_forkl_list *forks;
+		db_file_list *leafs;
 	} data;
+};
+
+struct shadow_dbl {
+	// Number of keys
+	uint64_t numkeys;
+	// Array of formatlists
+	formatting *keys;
+	struct shadow_db_forkl root;
 };
 
 bool pred(void *a, void *b)
@@ -64,7 +64,7 @@ void log_shadow_dbl(enum loglevel l, struct shadow_dbl *sdbl)
 {
 	logmsg(l, "\n\n");
 	logmsg(l, "shadowDBL:\nnumkeys: %lu\n", sdbl->numkeys);
-	log_shadow_db_forkl(l, sdbl->rootfork, 0);
+	log_shadow_db_forkl(l, &sdbl->root, 0);
 	logmsg(l, "\n\n");
 }
 
@@ -73,7 +73,7 @@ void *index_db_fun(void *st, struct db_file *f)
 	struct shadow_dbl *sdbl = (struct shadow_dbl *)st;
 	logmsg(debug, "\nindex %s, numkeys: %lu\n", f->path, sdbl->numkeys);
 
-	struct shadow_db_forkl *curfork = sdbl->rootfork;
+	struct shadow_db_forkl *curfork = &sdbl->root;
 	struct shadow_db_forkl *tfork;
 	for(uint64_t i = 0; i < sdbl->numkeys; i++){
 		char *value = sformat(sdbl->keys[i], f);
@@ -105,33 +105,54 @@ void *index_db_fun(void *st, struct db_file *f)
 	return st;
 }
 
+/**
+ * Destructively convert a linked fork to an array fork
+ *
+ */
+struct shadow_db_fork *convert_listfork_to_array(struct shadow_db_forkl *lf)
+{
+	struct shadow_db_fork *f = safe_malloc(sizeof(struct shadow_db_fork));
+	f->value = lf->value;
+	f->isfork = lf->isfork;
+	if(f->isfork){
+		list_map(lf->data.forks, (list_map_fun)&convert_listfork_to_array);
+		f->data.forks = list_to_array(lf->data.forks, &f->num);
+		list_free(lf->data.forks, &list_free_ignore);
+	} else {
+		f->data.leafs = list_to_array(lf->data.leafs, &f->num);
+	}
+	return f;
+}
+
 struct shadow_db *index_db(struct db *db, struct listitem *keys)
 {
-	struct shadow_db *sdb = safe_malloc(sizeof(struct shadow_db));
-	sdb->keys = list_to_array(keys, &sdb->numkeys);
-
 	//Make an intermediate linked list tree
 	struct shadow_dbl *sdbl = safe_malloc(sizeof(struct shadow_dbl));
-	sdbl->numkeys = sdb->numkeys;
-	sdbl->keys = sdb->keys;
+	sdbl->keys = list_to_array(keys, &sdbl->numkeys);
 
 	//Add root fork
-	sdbl->rootfork = safe_malloc(sizeof(struct shadow_db_forkl));
-	sdbl->rootfork->value = NULL;
-	sdbl->rootfork->isfork = sdbl->numkeys>0;
-	sdbl->rootfork->data.forks = NULL;
+	sdbl->root.value = NULL;
+	sdbl->root.isfork = sdbl->numkeys>0;
+	sdbl->root.data.forks = NULL;
 
-	logmsg(debug, "numkeys: %lu\n", sdb->numkeys);
+	logmsg(debug, "numkeys: %lu\n", sdbl->numkeys);
 
 	sdbl = db_iterate(db->root, sdbl, &index_db_fun);
 
 	//Convert to array
+	struct shadow_db *sdb = safe_malloc(sizeof(struct shadow_db));
+	sdb->numkeys = sdbl->numkeys;
+	sdb->keys = sdbl->keys;
 
-	return NULL;
+	//Convert root node
+	struct shadow_db_fork *f = convert_listfork_to_array(&sdbl->root);
+	sdb->root = *f;
+	free(f);
+	free(sdbl);
+	return sdb;
 }
 
 void free_db_index(struct shadow_db *sdb)
 {
 	(void)sdb;
-//	safe_free(2, sdb->keys, sdb);
 }

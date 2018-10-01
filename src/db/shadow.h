@@ -6,23 +6,25 @@
 
 #include "../db.h"
 #include "../list.h"
+#include "../format.h"
 
-struct shadow_db {
-	uint64_t numkeys;
-	struct listitem **keys;
-	uint64_t num;
-	struct shadow_db_fork *root;
-};
+typedef struct listitem db_file_list;
+typedef struct listitem shadow_db_fork_list;
 
 struct shadow_db_fork {
-	char *key;
 	char *value;
 	bool isfork;
 	uint64_t num;
 	union {
-		struct shadow_db_fork *forks;
-		struct db_file *leafs;
+		shadow_db_fork_list *forks;
+		db_file_list *leafs;
 	} data;
+};
+
+struct shadow_db {
+	uint64_t numkeys;
+	formatting *keys;
+	struct shadow_db_fork root;
 };
 
 struct shadow_db *index_db(struct db *, struct listitem *);

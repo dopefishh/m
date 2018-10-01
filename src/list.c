@@ -85,6 +85,14 @@ void *list_iterate(struct listitem *head, void *st, void *(*stf)(void *, void *)
 	return st;
 }
 
+void list_map(struct listitem *head, void *(*mf)(void *))
+{
+	while(head != NULL){
+		head->value = mf(head->value);
+		head = head->next;
+	}
+}
+
 struct listitem *list_clone(struct listitem *head, void *(*cf)(void *))
 {
 	struct listitem *nhead = NULL, *ntail = NULL;

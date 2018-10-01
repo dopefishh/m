@@ -7,6 +7,7 @@
 
 typedef void (*list_free_fun) (void *);
 typedef void *(*list_clone_fun) (void *);
+typedef void *(*list_map_fun) (void *);
 typedef void *(*list_iter_fun) (void *, void *);
 
 struct listitem {
@@ -71,6 +72,13 @@ size_t list_length(struct listitem *);
 void  *list_iterate(struct listitem *, void *, void *(*)(void *st, void *el));
 
 /**
+ * Map a function on all elements of the list
+ * @param head
+ * @param map function
+ */
+void list_map(struct listitem *, void *(*)(void *));
+
+/**
  * Clone a list
  *
  * @param head
@@ -93,6 +101,13 @@ void   list_free(struct listitem *, void(*)(void *));
  * @param data to free
  */
 void   list_free_ignore(void *);
+
+/**
+ * Convert a list to an array
+ *
+ * @param list head
+ * @param optional pointer to the length
+ */
 void  *list_to_array(struct listitem *l, uint64_t *len);
 
 #endif
