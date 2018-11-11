@@ -13,7 +13,8 @@ See `INSTALL`
 
 ## Requirements
 ### Required
-- none
+
+- `autoconf` is needed to generate the buildscripts
 
 ### Optional
 These options can be set and unset in `conf.mk`
@@ -22,6 +23,16 @@ These options can be set and unset in `conf.mk`
 - `libvorbis` (for ogg support).
 - `libopusfile` (for opus support).
 - `libid3tag` (for mp3 support).
+
+For testing
+
+- `check` is needed to run tests
+- `libtool` is needed to build the library that check uses
+
+For the manpages
+
+- `help2man` is needed to generate the manpages
+
 
 ## Compilation
 - Generate the autotools files with `autoreconf --install`
